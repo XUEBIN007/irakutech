@@ -5,12 +5,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>居楽テック | 居酒屋・酒場向けITシステム</title>
-  <meta name="description" content="居酒屋・酒場専用のITシステム。タブレット注文・スマート会計・売上分析・在庫管理が一台で完結。初期費用ゼロ、月額9,800円から。">
-<meta name="keywords" content="居酒屋 システム, 飲食店 IT, タブレット注文, POS, 居楽テック">
-<meta property="og:title" content="居楽テック | 居酒屋・酒場向けITシステム">
-<meta property="og:description" content="タブレット注文・会計・在庫管理を一台で。初期費用ゼロ、月額9,800円から。">
-<meta property="og:url" content="https://xuebin007.github.io/irakutech/">
-<meta name="robots" content="index, follow">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Sans:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -106,14 +100,24 @@
     .lang-switcher { display: none; }
     .lang-switcher-mobile {
       display: flex !important;
-      position: fixed; bottom: 20px; right: 20px;
-      gap: 4px; align-items: center;
-      background: white;
+      position: fixed; bottom: 90px; right: 12px;
+      gap: 2px; align-items: center;
+      background: rgba(255,255,255,0.95);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 4px 6px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      padding: 3px 4px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
       z-index: 999;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+    .lang-switcher-mobile:hover,
+    .lang-switcher-mobile:focus-within {
+      opacity: 1;
+    }
+    .lang-switcher-mobile .lang-btn {
+      font-size: 16px;
+      padding: 3px 4px;
     }
   }
   .lang-switcher-mobile { display: none; }
@@ -936,7 +940,7 @@
       <!-- WeChat -->
       <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(10,191,188,0.2);border-radius:14px;padding:20px 16px;">
         <div style="font-size:11px;font-weight:700;color:var(--teal);letter-spacing:1px;margin-bottom:12px;font-family:'Space Mono',monospace;">WECHAT</div>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=WeChatID_irakutech" alt="WeChat QR" style="width:130px;height:130px;object-fit:cover;border-radius:8px;display:block;margin:0 auto 10px;">
+        <img src="wechat.jpg" alt="WeChat QR" style="width:130px;height:130px;object-fit:cover;border-radius:8px;display:block;margin:0 auto 10px;">
         <div style="font-size:12px;color:rgba(255,255,255,0.4);font-family:'Noto Sans JP',sans-serif;">スキャンして追加</div>
       </div>
 
