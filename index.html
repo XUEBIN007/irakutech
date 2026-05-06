@@ -488,6 +488,20 @@
     font-family: 'Noto Sans JP', sans-serif;
   }
 
+  /* ── TESTIMONIALS ── */
+  .testimonials { padding: 100px 24px; background: var(--bg); }
+  .testimonials-header { text-align: center; margin-bottom: 60px; }
+  .testi-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+  .testi-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 32px; display: flex; flex-direction: column; gap: 16px; transition: transform 0.2s, box-shadow 0.2s; }
+  .testi-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(10,191,188,0.1); }
+  .testi-stars { color: #f59e0b; font-size: 18px; letter-spacing: 2px; }
+  .testi-text { color: var(--text); font-size: 14px; line-height: 1.8; flex: 1; font-style: italic; }
+  .testi-author { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+  .testi-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--teal), var(--teal-dark)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+  .testi-name { font-weight: 700; font-size: 14px; color: var(--dark); }
+  .testi-shop { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  @media (max-width: 768px) { .testi-grid { grid-template-columns: 1fr; } }
+
   /* ── PRICING ── */
   .pricing { background: var(--white); }
   .pricing-header { text-align: center; margin-bottom: 64px; }
@@ -882,6 +896,50 @@
   </div>
 </section>
 
+<!-- TESTIMONIALS -->
+<section class="testimonials" id="testimonials">
+  <div class="testimonials-header reveal">
+    <div class="section-tag">// TESTIMONIALS</div>
+    <h2 class="section-title" data-i18n="testi_title">お客様の声</h2>
+    <p class="section-desc" data-i18n="testi_desc">全国の居酒屋・酒場オーナーから、うれしいお言葉をいただいています。</p>
+  </div>
+  <div class="testi-grid">
+    <div class="testi-card reveal">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text" data-i18n="testi1_text">「導入前は注文ミスが週に何度もあって悩んでいました。今はタブレットで注文が全部入るので、スタッフも楽になって売上も上がりました。」</p>
+      <div class="testi-author">
+        <div class="testi-avatar">田</div>
+        <div>
+          <div class="testi-name" data-i18n="testi1_name">田中 健一さん</div>
+          <div class="testi-shop" data-i18n="testi1_shop">居酒屋「たなか」オーナー・東京都</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card reveal">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text" data-i18n="testi2_text">「ITが苦手でずっと迷っていましたが、スタッフが丁寧に教えてくれて30分で使えました。会計がスムーズになって回転率が上がりました！」</p>
+      <div class="testi-author">
+        <div class="testi-avatar">佐</div>
+        <div>
+          <div class="testi-name" data-i18n="testi2_name">佐藤 美穂さん</div>
+          <div class="testi-shop" data-i18n="testi2_shop">小料理「さとう」オーナー・大阪府</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card reveal">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text" data-i18n="testi3_text">「月9,800円でこれだけの機能が使えるのは驚きです。他のシステムと比べて圧倒的にコスパが良い。サポートも素早く対応してくれます。」</p>
+      <div class="testi-author">
+        <div class="testi-avatar">山</div>
+        <div>
+          <div class="testi-name" data-i18n="testi3_name">山本 拓也さん</div>
+          <div class="testi-shop" data-i18n="testi3_shop">焼き鳥「やまもと」オーナー・名古屋市</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- PRICING -->
 <section class="pricing" id="pricing">
   <div class="pricing-header reveal">
@@ -1142,6 +1200,13 @@ const i18n = {
     form_submit: '送信する →', form_thanks: 'お問い合わせありがとうございます！\n24時間以内にご連絡いたします。',
     footer_copy: '© 2025 居楽テック. All rights reserved. ｜ 📞 080-5738-7605',
     footer_privacy: 'プライバシーポリシー', footer_law: '特定商取引法', footer_terms: '利用規約',
+    testi_title: 'お客様の声', testi_desc: '全国の居酒屋・酒場オーナーから、うれしいお言葉をいただいています。',
+    testi1_text: '「導入前は注文ミスが週に何度もあって悩んでいました。今はタブレットで注文が全部入るので、スタッフも楽になって売上も上がりました。」',
+    testi1_name: '田中 健一さん', testi1_shop: '居酒屋「たなか」オーナー・東京都',
+    testi2_text: '「ITが苦手でずっと迷っていましたが、スタッフが丁寧に教えてくれて30分で使えました。会計がスムーズになって回転率が上がりました！」',
+    testi2_name: '佐藤 美穂さん', testi2_shop: '小料理「さとう」オーナー・大阪府',
+    testi3_text: '「月9,800円でこれだけの機能が使えるのは驚きです。他のシステムと比べて圧倒的にコスパが良い。サポートも素早く対応してくれます。」',
+    testi3_name: '山本 拓也さん', testi3_shop: '焼き鳥「やまもと」オーナー・名古屋市',
   },
   zh: {
     nav_features: '功能', nav_how: '导入流程', nav_pricing: '价格',
@@ -1186,6 +1251,13 @@ const i18n = {
     form_submit: '发送 →', form_thanks: '感谢您的咨询！\n我们将在24小时内与您联系。',
     footer_copy: '© 2025 居楽テック. All rights reserved. ｜ 📞 080-5738-7605',
     footer_privacy: '隐私政策', footer_law: '特定商交易法', footer_terms: '使用条款',
+    testi_title: '客户评价', testi_desc: '来自全国居酒屋・酒吧老板的真实反馈。',
+    testi1_text: '"导入前每周都会出现好几次点单错误。现在用平板点单，员工轻松多了，营业额也提升了。"',
+    testi1_name: '田中 健一', testi1_shop: '居酒屋「たなか」老板・东京都',
+    testi2_text: '"我不太懂IT，一直很犹豫。但工作人员耐心教导，30分钟就学会了。结账更顺畅，翻台率也提高了！"',
+    testi2_name: '佐藤 美穂', testi2_shop: '小料理「さとう」老板・大阪府',
+    testi3_text: '"每月9800日元能用到这么多功能，真的很惊喜。和其他系统相比性价比超高。客服响应也很快。"',
+    testi3_name: '山本 拓也', testi3_shop: '烤鸡串「やまもと」老板・名古屋市',
   },
   en: {
     nav_features: 'Features', nav_how: 'How It Works', nav_pricing: 'Pricing',
@@ -1230,6 +1302,13 @@ const i18n = {
     form_submit: 'Send →', form_thanks: 'Thank you for your inquiry!\nWe will contact you within 24 hours.',
     footer_copy: '© 2025 居楽テック. All rights reserved. ｜ 📞 080-5738-7605',
     footer_privacy: 'Privacy Policy', footer_law: 'Commercial Law', footer_terms: 'Terms of Use',
+    testi_title: 'Customer Reviews', testi_desc: 'Hear from izakaya and bar owners across Japan.',
+    testi1_text: '"Before the system, we had ordering mistakes several times a week. Now everything comes in through the tablet — staff are happier and sales have gone up."',
+    testi1_name: 'Kenichi Tanaka', testi1_shop: 'Izakaya "Tanaka" Owner · Tokyo',
+    testi2_text: '"I\'m not great with technology and kept putting it off. But the staff walked me through it and I was up and running in 30 minutes. Checkout is so much smoother now!"',
+    testi2_name: 'Miho Sato', testi2_shop: 'Dining "Sato" Owner · Osaka',
+    testi3_text: '"I\'m amazed at how much you get for ¥9,800 a month. Way better value than other systems I looked at, and support responds incredibly fast."',
+    testi3_name: 'Takuya Yamamoto', testi3_shop: 'Yakitori "Yamamoto" Owner · Nagoya',
   }
 };
 
