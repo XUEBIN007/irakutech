@@ -488,6 +488,29 @@
     font-family: 'Noto Sans JP', sans-serif;
   }
 
+  /* ── FAQ ── */
+  .faq { padding: 100px 24px; background: var(--dark); }
+  .faq-inner { max-width: 800px; margin: 0 auto; }
+  .faq-header { text-align: center; margin-bottom: 60px; }
+  .faq-header .section-title { color: white; }
+  .faq-header .section-desc { color: rgba(255,255,255,0.5); }
+  .faq-list { display: flex; flex-direction: column; gap: 12px; }
+  .faq-item { border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; }
+  .faq-q {
+    width: 100%; background: rgba(255,255,255,0.05); border: none;
+    padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; color: white; font-size: 15px; font-weight: 600;
+    font-family: 'Noto Sans JP', sans-serif; text-align: left; gap: 16px;
+    transition: background 0.2s;
+  }
+  .faq-q:hover { background: rgba(10,191,188,0.1); }
+  .faq-q.open { background: rgba(10,191,188,0.15); color: var(--teal); }
+  .faq-icon { font-size: 20px; flex-shrink: 0; transition: transform 0.3s; }
+  .faq-q.open .faq-icon { transform: rotate(45deg); }
+  .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+  .faq-a.open { max-height: 200px; }
+  .faq-a p { padding: 16px 24px 20px; color: rgba(255,255,255,0.65); font-size: 14px; line-height: 1.8; margin: 0; }
+
   /* ── TESTIMONIALS ── */
   .testimonials { padding: 100px 24px; background: var(--bg); }
   .testimonials-header { text-align: center; margin-bottom: 60px; }
@@ -992,6 +1015,61 @@
   </div>
 </section>
 
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="faq-inner">
+    <div class="faq-header reveal">
+      <div class="section-tag">// FAQ</div>
+      <h2 class="section-title" data-i18n="faq_title">よくある質問</h2>
+      <p class="section-desc" data-i18n="faq_desc">導入前に気になることを、まとめてお答えします。</p>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span data-i18n="faq1_q">📱 タブレットは自分で用意する必要がありますか？</span>
+          <span class="faq-icon">＋</span>
+        </button>
+        <div class="faq-a"><p data-i18n="faq1_a">いいえ、弊社でご用意できます。また、すでにお持ちのiPadやAndroidタブレットをそのままご利用いただくことも可能です。対応機種についてはお気軽にご相談ください。</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span data-i18n="faq2_q">📄 契約期間の縛りはありますか？</span>
+          <span class="faq-icon">＋</span>
+        </button>
+        <div class="faq-a"><p data-i18n="faq2_a">最低契約期間は3ヶ月です。それ以降は月単位でいつでも解約可能です。長期契約による割引プランもご用意しています。</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span data-i18n="faq3_q">🌐 ネット環境がなくても使えますか？</span>
+          <span class="faq-icon">＋</span>
+        </button>
+        <div class="faq-a"><p data-i18n="faq3_a">基本的にはWi-Fi環境が必要です。ただし、一時的な通信障害に備えたオフラインモードも搭載しており、注文データはネット復帰後に自動同期されます。</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span data-i18n="faq4_q">🔧 トラブルが起きたときのサポートは？</span>
+          <span class="faq-icon">＋</span>
+        </button>
+        <div class="faq-a"><p data-i18n="faq4_a">24時間365日、電話・チャット・メールでサポートしています。緊急の場合はスタッフが直接対応します。これまでの平均対応時間は15分以内です。</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span data-i18n="faq5_q">💳 支払い方法は？</span>
+          <span class="faq-icon">＋</span>
+        </button>
+        <div class="faq-a"><p data-i18n="faq5_a">クレジットカード（Visa・Mastercard・JCB）、銀行振込に対応しています。月払い・年払いどちらも選択可能です。年払いの場合、2ヶ月分お得になります。</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span data-i18n="faq6_q">🔄 既存のPOSレジから乗り換えられますか？</span>
+          <span class="faq-icon">＋</span>
+        </button>
+        <div class="faq-a"><p data-i18n="faq6_a">はい、主要なPOSシステムとの連携に対応しています。乗り換えのサポートも弊社スタッフが全面的に代行しますので、ご安心ください。</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- CONTACT -->
 <section class="contact" id="contact">
   <div class="contact-bg"></div>
@@ -1393,6 +1471,41 @@ async function submitForm(e) {
     alert('送信に失敗しました。もう一度お試しください。');
   }
 }
+
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  const answer = item.querySelector('.faq-a');
+  const isOpen = btn.classList.contains('open');
+  document.querySelectorAll('.faq-q').forEach(b => {
+    b.classList.remove('open');
+    b.parentElement.querySelector('.faq-a').classList.remove('open');
+  });
+  if (!isOpen) { btn.classList.add('open'); answer.classList.add('open'); }
+}
+
+i18n.ja.faq_title = 'よくある質問'; i18n.ja.faq_desc = '導入前に気になることを、まとめてお答えします。';
+i18n.ja.faq1_q = '📱 タブレットは自分で用意する必要がありますか？'; i18n.ja.faq1_a = 'いいえ、弊社でご用意できます。また、すでにお持ちのiPadやAndroidタブレットをそのままご利用いただくことも可能です。対応機種についてはお気軽にご相談ください。';
+i18n.ja.faq2_q = '📄 契約期間の縛りはありますか？'; i18n.ja.faq2_a = '最低契約期間は3ヶ月です。それ以降は月単位でいつでも解約可能です。長期契約による割引プランもご用意しています。';
+i18n.ja.faq3_q = '🌐 ネット環境がなくても使えますか？'; i18n.ja.faq3_a = '基本的にはWi-Fi環境が必要です。ただし、一時的な通信障害に備えたオフラインモードも搭載しており、注文データはネット復帰後に自動同期されます。';
+i18n.ja.faq4_q = '🔧 トラブルが起きたときのサポートは？'; i18n.ja.faq4_a = '24時間365日、電話・チャット・メールでサポートしています。緊急の場合はスタッフが直接対応します。これまでの平均対応時間は15分以内です。';
+i18n.ja.faq5_q = '💳 支払い方法は？'; i18n.ja.faq5_a = 'クレジットカード（Visa・Mastercard・JCB）、銀行振込に対応しています。月払い・年払いどちらも選択可能です。年払いの場合、2ヶ月分お得になります。';
+i18n.ja.faq6_q = '🔄 既存のPOSレジから乗り換えられますか？'; i18n.ja.faq6_a = 'はい、主要なPOSシステムとの連携に対応しています。乗り換えのサポートも弊社スタッフが全面的に代行しますので、ご安心ください。';
+
+i18n.zh.faq_title = '常见问题'; i18n.zh.faq_desc = '导入前的所有疑问，这里一次解答。';
+i18n.zh.faq1_q = '📱 需要自己准备平板吗？'; i18n.zh.faq1_a = '不需要，我们可以为您提供。您也可以直接使用已有的iPad或Android平板。具体支持机型请随时咨询我们。';
+i18n.zh.faq2_q = '📄 有合同锁定期吗？'; i18n.zh.faq2_a = '最短合同期为3个月，之后可按月随时取消。我们也提供长期合同的优惠方案。';
+i18n.zh.faq3_q = '🌐 没有网络也能用吗？'; i18n.zh.faq3_a = '基本上需要Wi-Fi环境。但系统内置离线模式，网络恢复后订单数据会自动同步。';
+i18n.zh.faq4_q = '🔧 出现问题时怎么获得支持？'; i18n.zh.faq4_a = '我们提供24小时365天的电话、聊天、邮件支持。紧急情况下工作人员会直接处理，平均响应时间在15分钟以内。';
+i18n.zh.faq5_q = '💳 支持哪些付款方式？'; i18n.zh.faq5_a = '支持信用卡（Visa、Mastercard、JCB）和银行转账，可选月付或年付。年付可享受2个月免费优惠。';
+i18n.zh.faq6_q = '🔄 可以从现有POS收银机切换过来吗？'; i18n.zh.faq6_a = '可以，我们支持主流POS系统对接，切换过程由我们的工作人员全程协助，请放心。';
+
+i18n.en.faq_title = 'FAQ'; i18n.en.faq_desc = 'Everything you want to know before getting started.';
+i18n.en.faq1_q = '📱 Do I need to provide my own tablet?'; i18n.en.faq1_a = 'No, we can provide one for you. You can also use your existing iPad or Android tablet. Contact us to check compatibility.';
+i18n.en.faq2_q = '📄 Is there a minimum contract period?'; i18n.en.faq2_a = 'The minimum term is 3 months. After that, you can cancel anytime on a monthly basis. We also offer discounts for longer commitments.';
+i18n.en.faq3_q = '🌐 Does it work without internet?'; i18n.en.faq3_a = 'A Wi-Fi connection is generally required. However, the system includes an offline mode for temporary outages, and order data syncs automatically when connectivity is restored.';
+i18n.en.faq4_q = '🔧 What happens if something goes wrong?'; i18n.en.faq4_a = 'We offer 24/7 support via phone, chat, and email. For urgent issues, our staff responds directly. Our average response time is under 15 minutes.';
+i18n.en.faq5_q = '💳 What payment methods do you accept?'; i18n.en.faq5_a = 'We accept credit cards (Visa, Mastercard, JCB) and bank transfer. You can choose monthly or annual billing. Annual plans save you 2 months.';
+i18n.en.faq6_q = '🔄 Can I switch from my existing POS system?'; i18n.en.faq6_a = 'Yes, we support integration with major POS systems. Our staff will handle the entire migration process for you.';
 </script>
 </body>
 </html>
