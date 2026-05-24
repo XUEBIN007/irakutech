@@ -22,10 +22,10 @@
       { id: 'ochazuke', categoryId: 'rice', icon: '🍚', nameJa: '鮭茶漬け', nameZh: '鲑鱼茶泡饭', price: 520, desc: '締めにぴったり。', recommended: false, soldOut: false }
     ],
     tables: [
-      { id: '1', area: 'A', seats: 2, status: 'available' },
-      { id: '2', area: 'A', seats: 4, status: 'available' },
-      { id: '3', area: 'B', seats: 4, status: 'available' },
-      { id: '5', area: '座敷', seats: 6, status: 'available' }
+      { id: '1', area: 'A', seats: 2, status: 'available', enabled: true, token: 'A1DEMO01' },
+      { id: '2', area: 'A', seats: 4, status: 'available', enabled: true, token: 'A2DEMO02' },
+      { id: '3', area: 'B', seats: 4, status: 'available', enabled: true, token: 'B3DEMO03' },
+      { id: '5', area: '座敷', seats: 6, status: 'available', enabled: true, token: 'Z5DEMO05' }
     ],
     orders: []
   };
@@ -79,7 +79,7 @@
       return {
         categories: parsed.categories || clone(seed.categories),
         menu: parsed.menu || clone(seed.menu),
-        tables: parsed.tables || clone(seed.tables),
+        tables: normalizeTables(parsed.tables || clone(seed.tables)),
         orders: parsed.orders || []
       };
     } catch (error) {
@@ -92,6 +92,26 @@
   function saveStore(store) {
     storage().setItem(STORE_KEY, JSON.stringify(store));
     return store;
+  }
+
+  function randomToken() {
+    if (root.crypto?.getRandomValues) {
+      const bytes = new Uint8Array(6);
+      root.crypto.getRandomValues(bytes);
+      return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('').toUpperCase();
+    }
+    return Math.random().toString(36).slice(2, 10).toUpperCase() + Date.now().toString(36).slice(-4).toUpperCase();
+  }
+
+  function normalizeTables(tables) {
+    return tables.map((table) => ({
+      id: String(table.id),
+      area: table.area || 'A',
+      seats: Number(table.seats || 2),
+      status: table.status || 'available',
+      enabled: table.enabled !== false,
+      token: table.token || randomToken()
+    }));
   }
 
   function cartKey(tableId) {
@@ -175,13 +195,26 @@
     saveStore(store);
   }
 
-  function checkoutTable(tableId, paymentMethod) {
+  function checkoutTable(tableId, payment) {
     const store = loadStore();
-    let paidTotal = 0;
+    const paymentInfo = typeof payment === 'string' ? { method: payment } : (payment || {});
+    const method = paymentInfo.method || 'cash';
+    const unpaidOrders = store.orders.filter((order) => order.tableId === String(tableId) && order.paymentStatus !== 'paid');
+    const paidTotal = unpaidOrders.reduce((sum, order) => sum + order.total, 0);
+    const hasReceived = paymentInfo.receivedAmount !== undefined && paymentInfo.receivedAmount !== null && paymentInfo.receivedAmount !== '';
+    const receivedAmount = hasReceived ? Number(paymentInfo.receivedAmount) : paidTotal;
+    const changeAmount = Math.max(receivedAmount - paidTotal, 0);
     store.orders = store.orders.map((order) => {
       if (order.tableId !== String(tableId) || order.paymentStatus === 'paid') return order;
-      paidTotal += order.total;
-      return { ...order, status: 'paid', paymentStatus: 'paid', paymentMethod, paidAt: new Date().toISOString() };
+      return {
+        ...order,
+        status: 'paid',
+        paymentStatus: 'paid',
+        paymentMethod: method,
+        receivedAmount,
+        changeAmount,
+        paidAt: new Date().toISOString()
+      };
     });
     store.tables = store.tables.map((table) => table.id === String(tableId) ? { ...table, status: 'available' } : table);
     saveStore(store);
@@ -202,6 +235,53 @@
     const store = loadStore();
     store.menu = store.menu.map((item) => item.id === menuItemId ? { ...item, soldOut: !item.soldOut } : item);
     saveStore(store);
+  }
+
+  function upsertTable(table) {
+    const store = loadStore();
+    const existing = store.tables.find((entry) => entry.id === String(table.id));
+    const normalized = {
+      id: String(table.id).trim(),
+      area: String(table.area || 'A').trim(),
+      seats: Number(table.seats || 2),
+      status: existing?.status || table.status || 'available',
+      enabled: table.enabled !== false,
+      token: table.token || existing?.token || randomToken()
+    };
+    if (!normalized.id) throw new Error('Table id is required');
+    const index = store.tables.findIndex((entry) => entry.id === normalized.id);
+    if (index >= 0) store.tables[index] = normalized;
+    else store.tables.push(normalized);
+    store.tables.sort((a, b) => Number(a.id) - Number(b.id) || a.id.localeCompare(b.id));
+    saveStore(store);
+    return normalized;
+  }
+
+  function toggleTableEnabled(tableId) {
+    const store = loadStore();
+    store.tables = store.tables.map((table) => table.id === String(tableId) ? { ...table, enabled: !table.enabled } : table);
+    saveStore(store);
+  }
+
+  function regenerateTableToken(tableId) {
+    const store = loadStore();
+    store.tables = store.tables.map((table) => table.id === String(tableId) ? { ...table, token: randomToken() } : table);
+    saveStore(store);
+  }
+
+  function tableOrderUrl({ origin, basePath, table }) {
+    const cleanBase = ('/' + (basePath || '').replace(/^\/|\/$/g, '')).replace(/^\/$/, '');
+    const url = new URL(`${cleanBase}/order/`, origin);
+    url.searchParams.set('table', table.id);
+    url.searchParams.set('token', table.token);
+    return url.toString();
+  }
+
+  function validateTableAccess(tableId, token) {
+    const table = loadStore().tables.find((entry) => entry.id === String(tableId));
+    if (!table || table.enabled === false) return false;
+    if (!token) return true;
+    return table.token === token;
   }
 
   function resetDemo() {
@@ -227,6 +307,11 @@
     checkoutTable,
     upsertMenuItem,
     toggleSoldOut,
+    upsertTable,
+    toggleTableEnabled,
+    regenerateTableToken,
+    tableOrderUrl,
+    validateTableAccess,
     resetDemo
   };
 

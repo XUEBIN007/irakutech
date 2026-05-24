@@ -55,6 +55,19 @@
         </aside>
       </div>
       <section class="card" style="margin-top:14px">
+        <h2 data-i18n="table_qr">テーブル・QR管理</h2>
+        <div class="table-admin-grid">
+          <form class="field-grid" data-table-form>
+            <label class="field"><span data-i18n="table_id">テーブル番号</span><input name="id" required placeholder="3"></label>
+            <label class="field"><span data-i18n="area">エリア</span><input name="area" required placeholder="B"></label>
+            <label class="field"><span data-i18n="seats_count">席数</span><input name="seats" type="number" value="4" min="1"></label>
+            <label style="align-self:end"><input name="enabled" type="checkbox" checked> <span data-i18n="enabled">有効</span></label>
+            <button class="btn primary full" type="submit" data-i18n="save_table">テーブルを保存</button>
+          </form>
+          <div class="qr-grid" data-table-qr></div>
+        </div>
+      </section>
+      <section class="card" style="margin-top:14px">
         <h2 data-i18n="current_menu">現在のメニュー</h2>
         <div data-admin-menu></div>
       </section>

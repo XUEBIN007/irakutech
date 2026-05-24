@@ -412,6 +412,10 @@ button, input, select, textarea {
   font-weight: 900;
 }
 
+.danger-text {
+  color: var(--red);
+}
+
 .status {
   display: inline-flex;
   align-items: center;
@@ -457,6 +461,58 @@ button, input, select, textarea {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+
+.table-admin-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.qr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+}
+
+.qr-card {
+  display: grid;
+  gap: 12px;
+}
+
+.qr-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.qr-code {
+  display: grid;
+  place-items: center;
+  min-height: 176px;
+  border: 1px solid rgba(10,191,188,.2);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.qr-code img {
+  width: 156px;
+  height: 156px;
+}
+
+.url-box {
+  display: block;
+  overflow-wrap: anywhere;
+  padding: 10px;
+  border-radius: 7px;
+  background: #f4fbfb;
+  border: 1px solid rgba(10,191,188,.18);
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .field {
@@ -525,6 +581,10 @@ button, input, select, textarea {
   }
 
   .field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .table-admin-grid {
     grid-template-columns: 1fr;
   }
 }
