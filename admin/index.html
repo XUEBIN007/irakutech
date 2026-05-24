@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理 | 居楽テック</title>
+  <link rel="stylesheet" href="../assets/izakaya-app.css">
+</head>
+<body data-view="admin">
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="../">居楽テック</a>
+      <div class="topbar-right">
+        <nav class="nav">
+          <a href="../order/?table=3" data-i18n="nav_order">注文</a>
+          <a href="../kitchen/" data-i18n="nav_kitchen">厨房</a>
+          <a href="../checkout/" data-i18n="nav_checkout">会計</a>
+          <a class="active" href="../admin/" data-i18n="nav_admin">管理</a>
+        </nav>
+        <div class="lang-switcher" aria-label="Language">
+          <button type="button" data-lang="ja">🇯🇵 JP</button>
+          <button type="button" data-lang="zh">🇨🇳 中文</button>
+          <button type="button" data-lang="en">🇺🇸 EN</button>
+        </div>
+      </div>
+    </header>
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <div class="eyebrow" data-i18n="admin_eyebrow">Admin</div>
+          <h1 class="title" data-i18n="admin_title">メニュー・テーブル管理</h1>
+          <p class="muted" data-i18n="admin_desc">第一版は演示用の管理画面です。メニューと注文データはブラウザ内に保存されます。</p>
+        </div>
+        <button class="btn ghost" data-reset data-i18n="reset_demo">デモデータをリセット</button>
+      </div>
+      <div class="grid layout-two">
+        <section class="card">
+          <h2 data-i18n="menu_edit">メニュー編集</h2>
+          <form class="field-grid" data-menu-form>
+            <label class="field"><span data-i18n="id">ID</span><input name="id" placeholder="new-dish"></label>
+            <label class="field"><span data-i18n="category">分類</span><select name="categoryId"></select></label>
+            <label class="field"><span data-i18n="icon">アイコン</span><input name="icon" placeholder="🍽️"></label>
+            <label class="field"><span data-i18n="price">価格</span><input name="price" type="number" value="500" min="0"></label>
+            <label class="field"><span data-i18n="name_ja">日本語名</span><input name="nameJa" required placeholder="本日のおすすめ"></label>
+            <label class="field"><span data-i18n="name_zh">中国語名</span><input name="nameZh" required placeholder="今日推荐"></label>
+            <label class="field full"><span data-i18n="desc">説明</span><textarea name="desc" rows="2" placeholder="簡単な説明"></textarea></label>
+            <label><input name="recommended" type="checkbox"> <span data-i18n="recommended">おすすめ</span></label>
+            <label><input name="soldOut" type="checkbox"> <span data-i18n="soldout">売切れ</span></label>
+            <button class="btn primary full" type="submit" data-i18n="save_menu">メニューを保存</button>
+          </form>
+        </section>
+        <aside class="card">
+          <h2 data-i18n="table_status">テーブル状態</h2>
+          <div data-admin-tables></div>
+        </aside>
+      </div>
+      <section class="card" style="margin-top:14px">
+        <h2 data-i18n="current_menu">現在のメニュー</h2>
+        <div data-admin-menu></div>
+      </section>
+    </main>
+  </div>
+  <script src="../assets/izakaya-core.js"></script>
+  <script src="../assets/izakaya-i18n.js"></script>
+  <script src="../assets/izakaya-ui.js"></script>
+</body>
+</html>

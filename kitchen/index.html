@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>厨房 | 居楽テック</title>
+  <link rel="stylesheet" href="../assets/izakaya-app.css">
+</head>
+<body data-view="kitchen">
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="../">居楽テック</a>
+      <div class="topbar-right">
+        <nav class="nav">
+          <a href="../order/?table=3" data-i18n="nav_order">注文</a>
+          <a class="active" href="../kitchen/" data-i18n="nav_kitchen">厨房</a>
+          <a href="../checkout/" data-i18n="nav_checkout">会計</a>
+          <a href="../admin/" data-i18n="nav_admin">管理</a>
+        </nav>
+        <div class="lang-switcher" aria-label="Language">
+          <button type="button" data-lang="ja">🇯🇵 JP</button>
+          <button type="button" data-lang="zh">🇨🇳 中文</button>
+          <button type="button" data-lang="en">🇺🇸 EN</button>
+        </div>
+      </div>
+    </header>
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <div class="eyebrow" data-i18n="kitchen_eyebrow">Kitchen Display</div>
+          <h1 class="title" data-i18n="kitchen_title">厨房オーダー</h1>
+          <p class="muted" data-i18n="kitchen_desc">新規注文を調理中・完成へ進めます。</p>
+        </div>
+        <a class="app-link" href="../checkout/" data-i18n="kitchen_to_checkout">会計へ →</a>
+      </div>
+      <section class="grid" data-orders></section>
+    </main>
+  </div>
+  <script src="../assets/izakaya-core.js"></script>
+  <script src="../assets/izakaya-i18n.js"></script>
+  <script src="../assets/izakaya-ui.js"></script>
+</body>
+</html>

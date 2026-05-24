@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>会計 | 居楽テック</title>
+  <link rel="stylesheet" href="../assets/izakaya-app.css">
+</head>
+<body data-view="checkout">
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="../">居楽テック</a>
+      <div class="topbar-right">
+        <nav class="nav">
+          <a href="../order/?table=3" data-i18n="nav_order">注文</a>
+          <a href="../kitchen/" data-i18n="nav_kitchen">厨房</a>
+          <a class="active" href="../checkout/" data-i18n="nav_checkout">会計</a>
+          <a href="../admin/" data-i18n="nav_admin">管理</a>
+        </nav>
+        <div class="lang-switcher" aria-label="Language">
+          <button type="button" data-lang="ja">🇯🇵 JP</button>
+          <button type="button" data-lang="zh">🇨🇳 中文</button>
+          <button type="button" data-lang="en">🇺🇸 EN</button>
+        </div>
+      </div>
+    </header>
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <div class="eyebrow" data-i18n="checkout_eyebrow">Checkout</div>
+          <h1 class="title" data-i18n="checkout_title">テーブル会計</h1>
+          <p class="muted" data-i18n="checkout_desc">未会計の注文をテーブルごとにまとめて精算します。</p>
+        </div>
+      </div>
+      <div class="grid layout-two">
+        <section>
+          <div class="tabs" data-tables></div>
+          <div class="grid" data-checkout-orders style="margin-top:14px"></div>
+        </section>
+        <aside class="card pay-panel">
+          <h2 data-i18n="checkout_panel">会計</h2>
+          <label class="field">
+            <span data-i18n="payment_method">支払い方法</span>
+            <select data-payment-method>
+              <option value="cash" data-i18n="pay_cash">現金</option>
+              <option value="card" data-i18n="pay_card">クレジットカード</option>
+              <option value="qr" data-i18n="pay_qr">QR決済</option>
+            </select>
+          </label>
+          <div class="summary"><span data-i18n="checkout_total">請求金額</span><span data-checkout-total>¥0</span></div>
+          <button class="btn primary" data-pay style="width:100%;margin-top:14px" data-i18n="checkout_submit">会計完了・清台</button>
+        </aside>
+      </div>
+    </main>
+  </div>
+  <script src="../assets/izakaya-core.js"></script>
+  <script src="../assets/izakaya-i18n.js"></script>
+  <script src="../assets/izakaya-ui.js"></script>
+</body>
+</html>
