@@ -13,6 +13,7 @@
       <div class="topbar-right">
         <nav class="nav">
           <a href="../order/?table=3" data-i18n="nav_order">注文</a>
+          <a href="../takeout/" data-i18n="nav_takeout">テイクアウト</a>
           <a href="../kitchen/" data-i18n="nav_kitchen">厨房</a>
           <a class="active" href="../checkout/" data-i18n="nav_checkout">会計</a>
           <a href="../admin/" data-i18n="nav_admin">管理</a>
@@ -36,6 +37,13 @@
         <section>
           <div class="tabs" data-tables></div>
           <div class="grid" data-checkout-orders style="margin-top:14px"></div>
+          <section class="card outside-checkout">
+            <div class="section-head">
+              <h2 data-i18n="outside_checkout">外卖・自取未结账</h2>
+              <span class="status new" data-outside-count>0</span>
+            </div>
+            <div class="grid" data-outside-orders></div>
+          </section>
         </section>
         <aside class="card pay-panel">
           <h2 data-i18n="checkout_panel">会計</h2>
@@ -43,11 +51,16 @@
             <span data-i18n="payment_method">支払い方法</span>
             <select data-payment-method>
               <option value="cash" data-i18n="pay_cash">現金</option>
+              <option value="paypay" data-i18n="pay_paypay">PayPay</option>
+              <option value="linepay" data-i18n="pay_linepay">LINE Pay</option>
+              <option value="wechatpay" data-i18n="pay_wechatpay">WeChat Pay</option>
+              <option value="alipay" data-i18n="pay_alipay">Alipay</option>
               <option value="card" data-i18n="pay_card">クレジットカード</option>
-              <option value="qr" data-i18n="pay_qr">QR決済</option>
+              <option value="qr" data-i18n="pay_qr">その他QR決済</option>
             </select>
           </label>
           <div class="summary"><span data-i18n="checkout_total">請求金額</span><span data-checkout-total>¥0</span></div>
+          <p class="muted small-note" data-active-payment-hint data-i18n="checkout_hint_table">桌台结账时，请先选择左侧桌号。</p>
           <label class="field">
             <span data-i18n="received_amount">お預かり</span>
             <input data-received-amount type="number" min="0" step="1" inputmode="numeric" placeholder="10000">
@@ -56,6 +69,13 @@
           <button class="btn primary" data-pay style="width:100%;margin-top:14px" data-i18n="checkout_submit">会計完了・清台</button>
         </aside>
       </div>
+      <section class="card" style="margin-top:16px">
+        <div class="section-head">
+          <h2 data-i18n="payment_history">收款记录</h2>
+          <strong class="price" data-payment-total>¥0</strong>
+        </div>
+        <div class="payment-list" data-payment-history></div>
+      </section>
     </main>
   </div>
   <script src="../assets/izakaya-core.js"></script>

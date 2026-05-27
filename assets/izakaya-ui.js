@@ -5,6 +5,7 @@
   const yen = (value) => '¥' + Number(value || 0).toLocaleString('ja-JP');
   const t = (key, params) => i18n ? i18n.t(key, params) : key;
   const statusText = (status) => t(`status_${status}`);
+  const paymentText = (method) => t(`pay_${method}`) === `pay_${method}` ? method : t(`pay_${method}`);
 
   function notify(message) {
     const old = document.querySelector('.toast');
@@ -18,6 +19,30 @@
 
   function itemName(item) {
     return `${item.nameJa} / ${item.nameZh}`;
+  }
+
+  function orderLabel(order) {
+    if (order.orderType === 'pickup') return `${t('order_type_pickup')} ${order.customer?.name || ''}`.trim();
+    if (order.orderType === 'delivery') return `${t('order_type_delivery')} ${order.customer?.name || ''}`.trim();
+    return t('order_title', { table: order.tableId });
+  }
+
+  function fulfillmentMeta(order) {
+    const parts = [];
+    if (order.orderType && order.orderType !== 'dine-in') parts.push(t(`order_type_${order.orderType}`));
+    if (order.fulfillment?.requestedAt) parts.push(`${t('requested_time')}: ${order.fulfillment.requestedAt}`);
+    if (order.fulfillment?.address) parts.push(order.fulfillment.address);
+    if (order.customer?.phone) parts.push(order.customer.phone);
+    return parts.join(' · ');
+  }
+
+  function orderLinesMarkup(order) {
+    return order.lines.map((line) => `
+      <div class="order-line">
+        <div><strong>${line.nameJa}</strong> × ${line.quantity}${line.note ? `<div class="muted">${t('note')}: ${line.note}</div>` : ''}</div>
+        <div class="price">${yen(line.price * line.quantity)}</div>
+      </div>
+    `).join('');
   }
 
   function getTableId() {
@@ -45,6 +70,9 @@
         document.querySelector('[data-cart]').innerHTML = `<div class="empty">${t('invalid_table')}</div>`;
         document.querySelector('[data-total]').textContent = yen(0);
         document.querySelector('[data-submit]').disabled = true;
+        document.querySelector('[data-order-count]').textContent = t('open_order_count', { count: 0 });
+        document.querySelector('[data-open-orders]').innerHTML = `<div class="empty small">${t('ordered_empty')}</div>`;
+        document.querySelector('[data-open-total]').textContent = yen(0);
         return;
       }
       const categories = [{ id: 'all', nameJa: t('all'), nameZh: t('all') }, ...store.categories];
@@ -91,6 +119,19 @@
       }).join('') : `<div class="empty">${t('cart_empty')}</div>`;
       document.querySelector('[data-total]').textContent = yen(core.cartTotal(cart, store.menu));
       document.querySelector('[data-submit]').disabled = cart.length === 0;
+      const summary = core.tableOpenSummary(tableId);
+      document.querySelector('[data-order-count]').textContent = t('open_order_count', { count: summary.orders.length });
+      document.querySelector('[data-open-orders]').innerHTML = summary.orders.length ? summary.orders.map((order) => `
+        <article class="mini-order">
+          <div class="btn-row">
+            <span class="status ${order.status}">${statusText(order.status)}</span>
+            <strong>${new Date(order.createdAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</strong>
+            <span class="price">${yen(order.total)}</span>
+          </div>
+          ${orderLinesMarkup(order)}
+        </article>
+      `).join('') : `<div class="empty small">${t('ordered_empty')}</div>`;
+      document.querySelector('[data-open-total]').textContent = yen(summary.total);
     }
 
     document.addEventListener('click', (event) => {
@@ -138,15 +179,11 @@
       <article class="card order-card">
         <div class="btn-row">
           <span class="status ${order.status}">${statusText(order.status)}</span>
-          <strong>${t('order_title', { table: order.tableId })}</strong>
+          <strong>${orderLabel(order)}</strong>
           <span class="muted">${new Date(order.createdAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</span>
+          ${fulfillmentMeta(order) ? `<span class="muted">${fulfillmentMeta(order)}</span>` : ''}
         </div>
-        <div>${order.lines.map((line) => `
-          <div class="order-line">
-            <div><strong>${line.nameJa}</strong> × ${line.quantity}${line.note ? `<div class="muted">${t('note')}: ${line.note}</div>` : ''}</div>
-            <div class="price">${yen(line.price * line.quantity)}</div>
-          </div>
-        `).join('')}</div>
+        <div>${orderLinesMarkup(order)}</div>
         <div class="summary"><span>${t('total')}</span><span>${yen(order.total)}</span></div>
         <div class="btn-row">
           <button class="btn warn" data-status="${order.id}:preparing" ${order.status !== 'new' ? 'disabled' : ''}>${t('action_preparing')}</button>
@@ -157,10 +194,52 @@
   }
 
   function mountKitchen() {
+    function kitchenOrderMarkup(order) {
+      const itemCount = order.lines.reduce((sum, line) => sum + line.quantity, 0);
+      return `
+        <article class="card order-card kitchen-ticket">
+          <div class="ticket-head">
+            <div>
+              <span class="status ${order.status}">${statusText(order.status)}</span>
+              <h2>${orderLabel(order)}</h2>
+              <div class="meta">
+                <span>${new Date(order.createdAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</span>
+                <span>${t('item_count', { count: itemCount })}</span>
+                ${fulfillmentMeta(order) ? `<span>${fulfillmentMeta(order)}</span>` : ''}
+              </div>
+            </div>
+            <div class="price">${yen(order.total)}</div>
+          </div>
+          <div>${orderLinesMarkup(order)}</div>
+          <div class="btn-row">
+            ${order.status === 'new' ? `<button class="btn warn" data-status="${order.id}:preparing">${t('action_preparing')}</button>` : ''}
+            ${order.status === 'preparing' ? `<button class="btn primary" data-status="${order.id}:done">${t('action_done')}</button>` : ''}
+            ${order.status === 'done' ? `<span class="muted">${t('waiting_checkout')}</span>` : ''}
+          </div>
+        </article>
+      `;
+    }
+
+    function kitchenColumn(status, orders) {
+      return `
+        <section class="kitchen-column ${status}">
+          <div class="section-head">
+            <h2>${t(`kitchen_${status}`)}</h2>
+            <span class="status ${status}">${orders.length}</span>
+          </div>
+          <div class="grid">
+            ${orders.length ? orders.map(kitchenOrderMarkup).join('') : `<div class="empty small">${t(`kitchen_empty_${status}`)}</div>`}
+          </div>
+        </section>
+      `;
+    }
+
     function render() {
       i18n?.applyLang(i18n.getLang());
-      const orders = core.loadStore().orders.filter((order) => order.paymentStatus !== 'paid');
-      document.querySelector('[data-orders]').innerHTML = orders.length ? orders.map(orderMarkup).join('') : `<div class="empty">${t('kitchen_empty')}</div>`;
+      const groups = core.kitchenOrderGroups();
+      document.querySelector('[data-orders]').innerHTML = ['new', 'preparing', 'done']
+        .map((status) => kitchenColumn(status, groups[status]))
+        .join('');
     }
     document.addEventListener('click', (event) => {
       const action = event.target.closest('[data-status]');
@@ -175,15 +254,153 @@
     render();
   }
 
+  function mountTakeout() {
+    const cartId = 'takeout';
+    let selectedCategory = 'all';
+    let fulfillmentMethod = 'pickup';
+
+    function deliveryFee() {
+      return fulfillmentMethod === 'delivery' ? 300 : 0;
+    }
+
+    function render() {
+      i18n?.applyLang(i18n.getLang());
+      const store = core.loadStore();
+      const cart = core.loadCart(cartId);
+      document.querySelectorAll('[data-fulfillment]').forEach((button) => {
+        button.classList.toggle('active', button.dataset.fulfillment === fulfillmentMethod);
+      });
+      const addressField = document.querySelector('[data-delivery-address-field]');
+      if (addressField) addressField.hidden = fulfillmentMethod !== 'delivery';
+      const categories = [{ id: 'all', nameJa: t('all'), nameZh: t('all') }, ...store.categories];
+      document.querySelector('[data-categories]').innerHTML = categories.map((category) => (
+        `<button class="chip ${category.id === selectedCategory ? 'active' : ''}" data-category="${category.id}">${category.nameJa}</button>`
+      )).join('');
+      const menu = selectedCategory === 'all'
+        ? store.menu
+        : store.menu.filter((item) => item.categoryId === selectedCategory);
+      document.querySelector('[data-menu]').innerHTML = menu.map((item) => `
+        <article class="card menu-item ${item.soldOut ? 'soldout' : ''}">
+          <div class="menu-top">
+            <div>
+              <div class="dish-icon">${item.icon}</div>
+              <div class="dish-name">${item.nameJa}</div>
+              <div class="dish-sub">${item.nameZh}</div>
+            </div>
+            <div class="price">${yen(item.price)}</div>
+          </div>
+          <div class="dish-desc">${item.desc}${item.recommended ? ` · ${t('recommended')}` : ''}</div>
+          <button class="btn primary" data-add="${item.id}" ${item.soldOut ? 'disabled' : ''}>${item.soldOut ? t('soldout') : t('add')}</button>
+        </article>
+      `).join('');
+      document.querySelector('[data-takeout-cart]').innerHTML = cart.length ? cart.map((line) => {
+        const item = store.menu.find((entry) => entry.id === line.menuItemId);
+        return `
+          <div class="cart-line">
+            <div>
+              <strong>${itemName(item)}</strong>
+              <input class="note" data-note="${line.menuItemId}" placeholder="${t('note_placeholder')}" value="${line.note || ''}">
+            </div>
+            <div>
+              <div class="price">${yen(item.price * line.quantity)}</div>
+              <div class="qty">
+                <button data-dec="${line.menuItemId}">-</button>
+                <strong>${line.quantity}</strong>
+                <button data-inc="${line.menuItemId}">+</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('') : `<div class="empty">${t('cart_empty')}</div>`;
+      const subtotal = core.cartTotal(cart, store.menu);
+      document.querySelector('[data-subtotal]').textContent = yen(subtotal);
+      document.querySelector('[data-delivery-fee]').textContent = yen(deliveryFee());
+      document.querySelector('[data-total]').textContent = yen(subtotal + deliveryFee());
+      document.querySelector('[data-submit-takeout]').disabled = cart.length === 0;
+    }
+
+    document.addEventListener('click', (event) => {
+      const fulfillment = event.target.closest('[data-fulfillment]');
+      if (fulfillment) {
+        fulfillmentMethod = fulfillment.dataset.fulfillment;
+        render();
+      }
+      const category = event.target.closest('[data-category]');
+      if (category) {
+        selectedCategory = category.dataset.category;
+        render();
+      }
+      const add = event.target.closest('[data-add]');
+      if (add) {
+        core.addToCart(cartId, add.dataset.add);
+        render();
+      }
+      const inc = event.target.closest('[data-inc]');
+      if (inc) {
+        const line = core.loadCart(cartId).find((entry) => entry.menuItemId === inc.dataset.inc);
+        core.updateCartLine(cartId, inc.dataset.inc, { quantity: line.quantity + 1 });
+        render();
+      }
+      const dec = event.target.closest('[data-dec]');
+      if (dec) {
+        const line = core.loadCart(cartId).find((entry) => entry.menuItemId === dec.dataset.dec);
+        core.updateCartLine(cartId, dec.dataset.dec, { quantity: line.quantity - 1 });
+        render();
+      }
+      const submit = event.target.closest('[data-submit-takeout]');
+      if (submit) {
+        const name = document.querySelector('[data-customer-name]').value.trim();
+        const phone = document.querySelector('[data-customer-phone]').value.trim();
+        const requestedAt = document.querySelector('[data-requested-time]').value.trim();
+        const address = document.querySelector('[data-delivery-address]').value.trim();
+        if (!name || !phone || !requestedAt || (fulfillmentMethod === 'delivery' && !address)) {
+          notify(t('takeout_missing'));
+          return;
+        }
+        const order = core.createOrder({
+          orderType: fulfillmentMethod,
+          cart: core.loadCart(cartId),
+          customer: { name, phone },
+          fulfillment: {
+            method: fulfillmentMethod,
+            requestedAt,
+            address,
+            note: document.querySelector('[data-fulfillment-note]').value.trim()
+          },
+          deliveryFee: deliveryFee()
+        });
+        core.clearCart?.(cartId);
+        notify(`${t('accepted')}: ${order.id}`);
+        render();
+      }
+    });
+
+    document.addEventListener('input', (event) => {
+      const note = event.target.closest('[data-note]');
+      if (note) core.updateCartLine(cartId, note.dataset.note, { note: note.value });
+    });
+    window.addEventListener('storage', render);
+    window.addEventListener('irakutech:lang', render);
+    render();
+  }
+
   function mountCheckout() {
     let selectedTable = '3';
+    let selectedOutsideOrderId = '';
     function selectedTableTotal() {
       return core.loadStore().orders
         .filter((order) => order.tableId === selectedTable && order.paymentStatus !== 'paid')
         .reduce((sum, order) => sum + order.total, 0);
     }
+    function activeCheckoutTotal() {
+      if (selectedOutsideOrderId) {
+        const order = core.loadStore().orders.find((entry) => entry.id === selectedOutsideOrderId && entry.paymentStatus !== 'paid');
+        return order ? order.total : 0;
+      }
+      return selectedTableTotal();
+    }
     function renderChange() {
-      const total = selectedTableTotal();
+      const total = activeCheckoutTotal();
       const receivedInput = document.querySelector('[data-received-amount]');
       const changeTotal = document.querySelector('[data-change-total]');
       if (!receivedInput || !changeTotal) return;
@@ -196,6 +413,9 @@
       i18n?.applyLang(i18n.getLang());
       const store = core.loadStore();
       const openOrders = store.orders.filter((order) => order.paymentStatus !== 'paid');
+      const outsideOrders = openOrders.filter((order) => order.orderType !== 'dine-in');
+      if (selectedOutsideOrderId && !outsideOrders.some((order) => order.id === selectedOutsideOrderId)) selectedOutsideOrderId = '';
+      const payments = core.paymentHistory();
       document.querySelector('[data-tables]').innerHTML = store.tables.map((table) => {
         const total = openOrders.filter((order) => order.tableId === table.id).reduce((sum, order) => sum + order.total, 0);
         return `<button class="tab ${selectedTable === table.id ? 'active' : ''}" data-table="${table.id}">${table.area}-${table.id} · ${table.seats}${t('seats')} · ${total ? yen(total) : t('available')}</button>`;
@@ -203,20 +423,53 @@
       const tableOrders = openOrders.filter((order) => order.tableId === selectedTable);
       const total = tableOrders.reduce((sum, order) => sum + order.total, 0);
       document.querySelector('[data-checkout-orders]').innerHTML = tableOrders.length ? tableOrders.map(orderMarkup).join('') : `<div class="empty">${t('checkout_empty')}</div>`;
-      document.querySelector('[data-checkout-total]').textContent = yen(total);
-      document.querySelector('[data-pay]').disabled = total === 0;
+      document.querySelector('[data-outside-count]').textContent = outsideOrders.length;
+      document.querySelector('[data-outside-orders]').innerHTML = outsideOrders.length ? outsideOrders.map((order) => `
+        <article class="mini-order ${selectedOutsideOrderId === order.id ? 'selected' : ''}">
+          <div class="btn-row">
+            <span class="status ${order.status}">${statusText(order.status)}</span>
+            <strong>${orderLabel(order)}</strong>
+            <span class="price">${yen(order.total)}</span>
+          </div>
+          <div class="muted">${fulfillmentMeta(order)}</div>
+          <div>${orderLinesMarkup(order)}</div>
+          <button class="btn ghost" data-select-outside-order="${order.id}">${t('select_for_payment')}</button>
+        </article>
+      `).join('') : `<div class="empty small">${t('outside_checkout_empty')}</div>`;
+      document.querySelector('[data-checkout-total]').textContent = yen(activeCheckoutTotal());
+      const hint = document.querySelector('[data-active-payment-hint]');
+      if (hint) hint.textContent = selectedOutsideOrderId ? t('checkout_hint_outside') : t('checkout_hint_table');
+      document.querySelector('[data-pay]').disabled = activeCheckoutTotal() === 0;
+      document.querySelector('[data-payment-total]').textContent = yen(payments.total);
+      document.querySelector('[data-payment-history]').innerHTML = payments.records.length ? payments.records.map((record) => `
+        <div class="payment-line">
+          <div>
+            <strong>${orderLabel(record)}</strong>
+            <div class="muted">${paymentText(record.method)} · ${record.paidAt ? new Date(record.paidAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : '-'}</div>
+            ${fulfillmentMeta(record) ? `<div class="muted">${fulfillmentMeta(record)}</div>` : ''}
+            <div class="muted">${t('payment_received')}: ${yen(record.receivedAmount)} · ${t('payment_change')}: ${yen(record.changeAmount)}</div>
+          </div>
+          <div class="price">${yen(record.total)}</div>
+        </div>
+      `).join('') : `<div class="empty small">${t('payment_history_empty')}</div>`;
       renderChange();
     }
     document.addEventListener('click', (event) => {
       const table = event.target.closest('[data-table]');
       if (table) {
         selectedTable = table.dataset.table;
+        selectedOutsideOrderId = '';
+        render();
+      }
+      const outsideOrder = event.target.closest('[data-select-outside-order]');
+      if (outsideOrder) {
+        selectedOutsideOrderId = outsideOrder.dataset.selectOutsideOrder;
         render();
       }
       const pay = event.target.closest('[data-pay]');
       if (pay) {
         const method = document.querySelector('[data-payment-method]').value;
-        const totalDue = selectedTableTotal();
+        const totalDue = activeCheckoutTotal();
         const receivedInput = document.querySelector('[data-received-amount]');
         const receivedAmount = receivedInput.value === '' ? totalDue : Number(receivedInput.value);
         if (receivedAmount < totalDue) {
@@ -224,8 +477,11 @@
           renderChange();
           return;
         }
-        const total = core.checkoutTable(selectedTable, { method, receivedAmount });
+        const total = selectedOutsideOrderId
+          ? core.checkoutOrder(selectedOutsideOrderId, { method, receivedAmount })
+          : core.checkoutTable(selectedTable, { method, receivedAmount });
         notify(`${t('checkout_done')}: ${yen(total)}`);
+        selectedOutsideOrderId = '';
         receivedInput.value = '';
         render();
       }
@@ -385,6 +641,7 @@
 
   i18n?.init();
   if (view === 'order') mountOrder();
+  if (view === 'takeout') mountTakeout();
   if (view === 'kitchen') mountKitchen();
   if (view === 'checkout') mountCheckout();
   if (view === 'admin') mountAdmin();

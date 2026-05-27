@@ -13,6 +13,7 @@
       <div class="topbar-right">
         <nav class="nav">
           <a class="active" href="../order/?table=3" data-i18n="nav_order">注文</a>
+          <a href="../takeout/" data-i18n="nav_takeout">テイクアウト</a>
           <a href="../kitchen/" data-i18n="nav_kitchen">厨房</a>
           <a href="../checkout/" data-i18n="nav_checkout">会計</a>
           <a href="../admin/" data-i18n="nav_admin">管理</a>
@@ -43,6 +44,14 @@
           <div data-cart></div>
           <div class="summary"><span data-i18n="total">合計</span><span data-total>¥0</span></div>
           <button class="btn primary" data-submit style="width:100%;margin-top:14px" data-i18n="order_submit">注文を送信</button>
+          <div class="order-history">
+            <div class="section-head">
+              <h2 data-i18n="ordered_title">注文済み</h2>
+              <span class="status done" data-order-count>0</span>
+            </div>
+            <div data-open-orders></div>
+            <div class="summary compact"><span data-i18n="current_due">現在のご利用額</span><span data-open-total>¥0</span></div>
+          </div>
         </aside>
       </div>
     </main>

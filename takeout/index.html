@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>テイクアウト・デリバリー | 居楽テック</title>
+  <link rel="stylesheet" href="../assets/izakaya-app.css">
+</head>
+<body data-view="takeout">
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="../">居楽テック</a>
+      <div class="topbar-right">
+        <nav class="nav">
+          <a href="../order/?table=3" data-i18n="nav_order">注文</a>
+          <a class="active" href="../takeout/" data-i18n="nav_takeout">テイクアウト</a>
+          <a href="../kitchen/" data-i18n="nav_kitchen">厨房</a>
+          <a href="../checkout/" data-i18n="nav_checkout">会計</a>
+          <a href="../admin/" data-i18n="nav_admin">管理</a>
+        </nav>
+        <div class="lang-switcher" aria-label="Language">
+          <button type="button" data-lang="ja">🇯🇵 JP</button>
+          <button type="button" data-lang="zh">🇨🇳 中文</button>
+          <button type="button" data-lang="en">🇺🇸 EN</button>
+        </div>
+      </div>
+    </header>
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <div class="eyebrow" data-i18n="takeout_eyebrow">Outside Ordering</div>
+          <h1 class="title" data-i18n="takeout_title">テイクアウト・デリバリー</h1>
+          <p class="muted" data-i18n="takeout_desc">家や職場から注文して、店頭受取または店舗配送を選べます。</p>
+        </div>
+        <a class="app-link" href="../kitchen/" data-i18n="order_to_kitchen">厨房で確認 →</a>
+      </div>
+      <div class="grid layout-two">
+        <section>
+          <div class="fulfillment-card card">
+            <h2 data-i18n="fulfillment_method">受取方法</h2>
+            <div class="segmented">
+              <button class="active" type="button" data-fulfillment="pickup" data-i18n="order_type_pickup">テイクアウト</button>
+              <button type="button" data-fulfillment="delivery" data-i18n="order_type_delivery">デリバリー</button>
+            </div>
+            <div class="field-grid">
+              <label class="field"><span data-i18n="customer_name">お名前</span><input data-customer-name placeholder="田中"></label>
+              <label class="field"><span data-i18n="customer_phone">電話番号</span><input data-customer-phone inputmode="tel" placeholder="090-0000-0000"></label>
+              <label class="field"><span data-i18n="requested_time">希望時間</span><input data-requested-time placeholder="18:30"></label>
+              <label class="field" data-delivery-address-field><span data-i18n="delivery_address">配送先住所</span><input data-delivery-address placeholder="東京都新宿区1-2-3"></label>
+              <label class="field full"><span data-i18n="fulfillment_note">連絡事項</span><input data-fulfillment-note placeholder="辛さ控えめ、入口で電話してください"></label>
+            </div>
+          </div>
+          <div class="category-bar" data-categories></div>
+          <div class="grid menu-grid" data-menu></div>
+        </section>
+        <aside class="card pay-panel">
+          <h2 data-i18n="cart_title">現在の注文</h2>
+          <div data-takeout-cart></div>
+          <div class="summary"><span data-i18n="subtotal">小計</span><span data-subtotal>¥0</span></div>
+          <div class="summary compact"><span data-i18n="delivery_fee">配送料</span><span data-delivery-fee>¥0</span></div>
+          <div class="summary"><span data-i18n="total">合計</span><span data-total>¥0</span></div>
+          <button class="btn primary" data-submit-takeout style="width:100%;margin-top:14px" data-i18n="takeout_submit">注文を送信</button>
+          <p class="muted small-note" data-i18n="takeout_notice">店舗からの確認後、受取または配送の準備を進めます。</p>
+        </aside>
+      </div>
+    </main>
+  </div>
+  <script src="../assets/izakaya-core.js"></script>
+  <script src="../assets/izakaya-i18n.js"></script>
+  <script src="../assets/izakaya-ui.js"></script>
+</body>
+</html>

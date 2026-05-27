@@ -80,7 +80,7 @@
         categories: parsed.categories || clone(seed.categories),
         menu: parsed.menu || clone(seed.menu),
         tables: normalizeTables(parsed.tables || clone(seed.tables)),
-        orders: parsed.orders || []
+        orders: (parsed.orders || []).map(normalizeOrder)
       };
     } catch (error) {
       const initial = clone(seed);
@@ -112,6 +112,31 @@
       enabled: table.enabled !== false,
       token: table.token || randomToken()
     }));
+  }
+
+  function normalizeOrder(order) {
+    const orderType = order.orderType || (order.tableId ? 'dine-in' : 'pickup');
+    const deliveryFee = Number(order.deliveryFee || 0);
+    const subtotal = Number(order.subtotal ?? order.total ?? 0) - (order.subtotal === undefined && deliveryFee ? deliveryFee : 0);
+    return {
+      ...order,
+      tableId: order.tableId ? String(order.tableId) : '',
+      orderType,
+      customer: {
+        name: order.customer?.name || '',
+        phone: order.customer?.phone || ''
+      },
+      fulfillment: {
+        method: order.fulfillment?.method || orderType,
+        requestedAt: order.fulfillment?.requestedAt || '',
+        address: order.fulfillment?.address || '',
+        note: order.fulfillment?.note || ''
+      },
+      fulfillmentStatus: order.fulfillmentStatus || 'pending',
+      subtotal,
+      deliveryFee,
+      total: Number(order.total ?? subtotal + deliveryFee)
+    };
   }
 
   function cartKey(tableId) {
@@ -158,9 +183,11 @@
     }, 0);
   }
 
-  function createOrder({ tableId, cart }) {
+  function createOrder({ tableId = '', cart, orderType, customer, fulfillment, deliveryFee = 0 }) {
     const store = loadStore();
     if (!cart || cart.length === 0) throw new Error('Cart is empty');
+    const normalizedOrderType = orderType || (tableId ? 'dine-in' : 'pickup');
+    const normalizedDeliveryFee = Number(deliveryFee || 0);
     const lines = cart.map((line) => {
       const item = store.menu.find((entry) => entry.id === line.menuItemId);
       if (!item || item.soldOut) throw new Error('Menu item unavailable');
@@ -173,19 +200,36 @@
         note: line.note || ''
       };
     });
+    const subtotal = lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
     const order = {
-      id: 'ORD-' + Date.now(),
-      tableId: String(tableId),
+      id: 'ORD-' + Date.now() + '-' + randomToken().slice(0, 4),
+      tableId: tableId ? String(tableId) : '',
+      orderType: normalizedOrderType,
+      customer: {
+        name: customer?.name || '',
+        phone: customer?.phone || ''
+      },
+      fulfillment: {
+        method: fulfillment?.method || normalizedOrderType,
+        requestedAt: fulfillment?.requestedAt || '',
+        address: fulfillment?.address || '',
+        note: fulfillment?.note || ''
+      },
+      fulfillmentStatus: 'pending',
       status: 'new',
       paymentStatus: 'unpaid',
       createdAt: new Date().toISOString(),
       lines,
-      total: lines.reduce((sum, line) => sum + line.price * line.quantity, 0)
+      subtotal,
+      deliveryFee: normalizedDeliveryFee,
+      total: subtotal + normalizedDeliveryFee
     };
     store.orders.unshift(order);
-    store.tables = store.tables.map((table) => table.id === String(tableId) ? { ...table, status: 'occupied' } : table);
+    if (normalizedOrderType === 'dine-in' && tableId) {
+      store.tables = store.tables.map((table) => table.id === String(tableId) ? { ...table, status: 'occupied' } : table);
+    }
     saveStore(store);
-    clearCart(tableId);
+    if (tableId) clearCart(tableId);
     return order;
   }
 
@@ -193,6 +237,28 @@
     const store = loadStore();
     store.orders = store.orders.map((order) => order.id === orderId ? { ...order, status } : order);
     saveStore(store);
+  }
+
+  function tableOpenSummary(tableId) {
+    const orders = loadStore().orders.filter((order) => (
+      order.tableId === String(tableId) && order.paymentStatus !== 'paid'
+    ));
+    return {
+      tableId: String(tableId),
+      orders,
+      total: orders.reduce((sum, order) => sum + order.total, 0)
+    };
+  }
+
+  function kitchenOrderGroups() {
+    const groups = { new: [], preparing: [], done: [] };
+    loadStore().orders
+      .filter((order) => order.paymentStatus !== 'paid')
+      .forEach((order) => {
+        const status = groups[order.status] ? order.status : 'new';
+        groups[status].push(order);
+      });
+    return groups;
   }
 
   function checkoutTable(tableId, payment) {
@@ -219,6 +285,51 @@
     store.tables = store.tables.map((table) => table.id === String(tableId) ? { ...table, status: 'available' } : table);
     saveStore(store);
     return paidTotal;
+  }
+
+  function checkoutOrder(orderId, payment) {
+    const store = loadStore();
+    const order = store.orders.find((entry) => entry.id === orderId && entry.paymentStatus !== 'paid');
+    if (!order) return 0;
+    const paymentInfo = typeof payment === 'string' ? { method: payment } : (payment || {});
+    const method = paymentInfo.method || 'cash';
+    const hasReceived = paymentInfo.receivedAmount !== undefined && paymentInfo.receivedAmount !== null && paymentInfo.receivedAmount !== '';
+    const receivedAmount = hasReceived ? Number(paymentInfo.receivedAmount) : order.total;
+    const changeAmount = Math.max(receivedAmount - order.total, 0);
+    store.orders = store.orders.map((entry) => entry.id === orderId ? {
+      ...entry,
+      status: 'paid',
+      paymentStatus: 'paid',
+      paymentMethod: method,
+      receivedAmount,
+      changeAmount,
+      paidAt: new Date().toISOString()
+    } : entry);
+    saveStore(store);
+    return order.total;
+  }
+
+  function paymentHistory() {
+    const records = loadStore().orders
+      .filter((order) => order.paymentStatus === 'paid')
+      .map((order) => ({
+        orderId: order.id,
+        tableId: order.tableId,
+        orderType: order.orderType,
+        customer: order.customer,
+        fulfillment: order.fulfillment,
+        method: order.paymentMethod || 'cash',
+        total: order.total,
+        receivedAmount: order.receivedAmount ?? order.total,
+        changeAmount: order.changeAmount || 0,
+        paidAt: order.paidAt,
+        lines: order.lines
+      }))
+      .sort((a, b) => String(b.paidAt || '').localeCompare(String(a.paidAt || '')));
+    return {
+      records,
+      total: records.reduce((sum, record) => sum + record.total, 0)
+    };
   }
 
   function upsertMenuItem(item) {
@@ -299,12 +410,17 @@
     saveStore,
     loadCart,
     saveCart,
+    clearCart,
     addToCart,
     updateCartLine,
     cartTotal,
     createOrder,
     updateOrderStatus,
+    tableOpenSummary,
+    kitchenOrderGroups,
     checkoutTable,
+    checkoutOrder,
+    paymentHistory,
     upsertMenuItem,
     toggleSoldOut,
     upsertTable,

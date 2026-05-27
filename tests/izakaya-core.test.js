@@ -22,8 +22,14 @@ core.updateCartLine('3', 'beer', { note: '少泡沫' });
 
 const order = core.createOrder({ tableId: '3', cart: core.loadCart('3') });
 assert.strictEqual(order.tableId, '3');
+assert.strictEqual(order.orderType, 'dine-in');
+assert.strictEqual(order.fulfillment.method, 'dine-in');
+assert.strictEqual(order.fulfillmentStatus, 'pending');
+assert.deepStrictEqual(order.customer, { name: '', phone: '' });
 assert.strictEqual(order.lines[0].quantity, 2);
 assert.strictEqual(order.lines[0].note, '少泡沫');
+assert.strictEqual(order.subtotal, 960);
+assert.strictEqual(order.deliveryFee, 0);
 assert.strictEqual(order.total, 960);
 assert.strictEqual(core.loadCart('3').length, 0);
 assert.strictEqual(core.loadStore().tables.find((table) => table.id === '3').status, 'occupied');
@@ -62,5 +68,83 @@ assert.strictEqual(core.validateTableAccess('8', updatedTable.token), false);
 core.toggleTableEnabled('8');
 assert.strictEqual(core.validateTableAccess('8', updatedTable.token), true);
 assert.strictEqual(core.validateTableAccess('8', 'wrong-token'), false);
+
+localStorage.clear();
+core.loadStore();
+core.addToCart('3', 'beer');
+const firstTableOrder = core.createOrder({ tableId: '3', cart: core.loadCart('3') });
+core.addToCart('3', 'karaage');
+const secondTableOrder = core.createOrder({ tableId: '3', cart: core.loadCart('3') });
+core.addToCart('2', 'highball');
+core.createOrder({ tableId: '2', cart: core.loadCart('2') });
+const tableSummary = core.tableOpenSummary('3');
+assert.strictEqual(tableSummary.tableId, '3');
+assert.strictEqual(tableSummary.orders.length, 2);
+assert.deepStrictEqual(tableSummary.orders.map((entry) => entry.id), [secondTableOrder.id, firstTableOrder.id]);
+assert.strictEqual(tableSummary.total, 1060);
+
+localStorage.clear();
+core.loadStore();
+core.addToCart('1', 'beer');
+const newOrder = core.createOrder({ tableId: '1', cart: core.loadCart('1') });
+core.addToCart('2', 'karaage');
+const preparingOrder = core.createOrder({ tableId: '2', cart: core.loadCart('2') });
+core.updateOrderStatus(preparingOrder.id, 'preparing');
+core.addToCart('3', 'momo');
+const doneOrder = core.createOrder({ tableId: '3', cart: core.loadCart('3') });
+core.updateOrderStatus(doneOrder.id, 'done');
+core.addToCart('5', 'potato');
+core.createOrder({ tableId: '5', cart: core.loadCart('5') });
+core.checkoutTable('5', { method: 'cash', receivedAmount: 500 });
+const kitchenGroups = core.kitchenOrderGroups();
+assert.deepStrictEqual(kitchenGroups.new.map((entry) => entry.id), [newOrder.id]);
+assert.deepStrictEqual(kitchenGroups.preparing.map((entry) => entry.id), [preparingOrder.id]);
+assert.deepStrictEqual(kitchenGroups.done.map((entry) => entry.id), [doneOrder.id]);
+
+localStorage.clear();
+core.loadStore();
+core.addToCart('1', 'beer');
+const cashOrder = core.createOrder({ tableId: '1', cart: core.loadCart('1') });
+core.checkoutTable('1', { method: 'paypay', receivedAmount: 480 });
+core.addToCart('2', 'karaage');
+const cardOrder = core.createOrder({ tableId: '2', cart: core.loadCart('2') });
+core.checkoutTable('2', { method: 'card', receivedAmount: 600 });
+const payments = core.paymentHistory();
+assert.deepStrictEqual(payments.records.map((entry) => entry.orderId), [cardOrder.id, cashOrder.id]);
+assert.deepStrictEqual(payments.records.map((entry) => entry.method), ['card', 'paypay']);
+assert.strictEqual(payments.records[0].changeAmount, 20);
+assert.strictEqual(payments.total, 1060);
+
+localStorage.clear();
+core.loadStore();
+const pickupOrder = core.createOrder({
+  orderType: 'pickup',
+  cart: [{ menuItemId: 'beer', quantity: 1, note: '18:30ごろ' }],
+  customer: { name: '田中', phone: '090-1111-2222' },
+  fulfillment: { requestedAt: '18:30', note: '店頭受取' }
+});
+assert.strictEqual(pickupOrder.tableId, '');
+assert.strictEqual(pickupOrder.orderType, 'pickup');
+assert.strictEqual(pickupOrder.fulfillment.method, 'pickup');
+assert.strictEqual(pickupOrder.fulfillment.requestedAt, '18:30');
+assert.strictEqual(pickupOrder.customer.name, '田中');
+assert.strictEqual(pickupOrder.total, 480);
+assert.strictEqual(core.loadStore().tables.find((entry) => entry.id === '3').status, 'available');
+
+const deliveryOrder = core.createOrder({
+  orderType: 'delivery',
+  cart: [{ menuItemId: 'highball', quantity: 1, note: '' }],
+  customer: { name: '佐藤', phone: '090-3333-4444' },
+  fulfillment: { requestedAt: '19:00', address: '東京都新宿区1-2-3', note: 'マンション前' },
+  deliveryFee: 300
+});
+assert.strictEqual(deliveryOrder.orderType, 'delivery');
+assert.strictEqual(deliveryOrder.fulfillment.method, 'delivery');
+assert.strictEqual(deliveryOrder.fulfillment.address, '東京都新宿区1-2-3');
+assert.strictEqual(deliveryOrder.subtotal, 420);
+assert.strictEqual(deliveryOrder.deliveryFee, 300);
+assert.strictEqual(deliveryOrder.total, 720);
+core.checkoutOrder(deliveryOrder.id, { method: 'paypay', receivedAmount: 720 });
+assert.strictEqual(core.paymentHistory().records[0].orderId, deliveryOrder.id);
 
 console.log('izakaya core tests passed');
