@@ -6,6 +6,7 @@
 
 - 首页: https://xuebin007.github.io/irakutech/
 - 顾客点菜: https://xuebin007.github.io/irakutech/order/?table=3
+- 外卖・自取: https://xuebin007.github.io/irakutech/takeout/
 - 厨房接单: https://xuebin007.github.io/irakutech/kitchen/
 - 会计结账: https://xuebin007.github.io/irakutech/checkout/
 - 后台管理: https://xuebin007.github.io/irakutech/admin/
@@ -29,6 +30,16 @@
 8. 输入实收金额，确认找零。
 9. 点击完成结账，桌台清空，收款记录出现。
 10. 后台页展示菜单编辑、桌台二维码、二维码停用和重新生成。
+
+## 外卖・自取演示流程
+
+1. 打开外卖・自取页面。
+2. 选择到店自取或店铺配送。
+3. 填写姓名、电话和希望时间。
+4. 添加菜品并提交订单。
+5. 顾客看到订单确认卡、订单号、取餐方式、希望时间和合计金额。
+6. 厨房页看到店外订单。
+7. 会计页选择店外订单并完成收款。
 
 ## 顾客视角说明
 

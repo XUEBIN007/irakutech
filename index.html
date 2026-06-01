@@ -369,6 +369,117 @@
   .features-header { text-align: center; margin-bottom: 64px; }
   .features-header .section-desc { margin: 0 auto; }
 
+  /* ── SOLUTIONS ── */
+  .solutions {
+    background: var(--white);
+    padding-top: 90px;
+  }
+  .solutions-header {
+    max-width: 860px;
+    margin: 0 auto 44px;
+    text-align: center;
+  }
+  .solutions-header .section-desc { margin: 0 auto; }
+  .solutions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .solution-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 260px;
+    padding: 28px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--off-white);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+  }
+  .solution-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--teal);
+    box-shadow: var(--shadow);
+  }
+  .solution-card.disabled {
+    cursor: default;
+    opacity: .72;
+  }
+  .solution-card.disabled:hover {
+    transform: none;
+    border-color: var(--border);
+    box-shadow: none;
+  }
+  .solution-icon {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+    border-radius: 14px;
+    background: var(--teal-light);
+    font-size: 25px;
+  }
+  .solution-kicker {
+    font-family: 'Space Mono', monospace;
+    color: var(--teal-dark);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .solution-title {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 10px;
+  }
+  .solution-text {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.8;
+    flex: 1;
+  }
+  .solution-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 22px;
+  }
+  .solution-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 9px 13px;
+    border-radius: 7px;
+    background: var(--teal);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background .2s, transform .15s;
+  }
+  .solution-link:hover {
+    background: var(--teal-dark);
+    transform: translateY(-1px);
+  }
+  .solution-link.secondary {
+    background: #fff;
+    color: var(--teal-dark);
+    border: 1px solid var(--border);
+  }
+  .solution-link.disabled {
+    background: rgba(15,25,35,.08);
+    color: var(--muted);
+    pointer-events: none;
+  }
+
   .features-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -699,6 +810,9 @@
     .hero { padding: 100px 24px 60px; }
     .hero-visual { display: none; }
     section { padding: 70px 24px; }
+    .solutions { padding-top: 70px; }
+    .solutions-grid { grid-template-columns: 1fr; }
+    .solution-card { min-height: auto; padding: 24px; }
     .stats { padding: 50px 24px; gap: 40px; }
     .how-inner { grid-template-columns: 1fr; gap: 40px; }
     footer { padding: 32px 24px; flex-direction: column; text-align: center; }
@@ -713,6 +827,7 @@
 <nav>
   <div class="nav-logo">居楽<span>テック</span></div>
   <ul class="nav-links">
+    <li><a href="#solutions" data-i18n="nav_solutions">サービス</a></li>
     <li><a href="#features" data-i18n="nav_features">機能</a></li>
     <li><a href="#how" data-i18n="nav_how">導入の流れ</a></li>
     <li><a href="#pricing" data-i18n="nav_pricing">料金</a></li>
@@ -740,16 +855,16 @@
   <div class="hero-bg"></div>
   <div class="hero-grid"></div>
   <div class="hero-content">
-    <div class="hero-badge" data-i18n="hero_badge">🍺 居酒屋・酒場専用ITシステム</div>
-    <h1>もっと<span class="accent" data-i18n="hero_h1_accent1">楽に</span>、<br>もっと<span class="accent" data-i18n="hero_h1_accent2">稼ぐ</span>。</h1>
-    <p class="hero-sub" data-i18n="hero_sub">小さなお店を、スマートに動かす。</p>
+    <div class="hero-badge" data-i18n="hero_badge">現場に合わせるITシステム開発</div>
+    <h1 data-i18n="hero_title">業務に合うITシステムを、<br><span class="accent">速く</span>、使いやすく。</h1>
+    <p class="hero-sub" data-i18n="hero_sub">日本の小規模事業者向けに、実際に使える業務システムを作ります。</p>
     <p class="hero-desc" data-i18n="hero_desc">
-      注文・会計・在庫・売上まで、すべてをひとつのシステムで。
-      難しい操作はいりません。タブレット一台で、今日から始められます。
+      予約・注文・会計・在庫・顧客管理・マッチングまで、業種ごとの仕事の流れに合わせて設計。
+      まず触れるデモを作り、現場で確認しながら改善していきます。
     </p>
     <div class="hero-actions">
-      <a href="#contact" class="btn-primary" data-i18n="hero_cta1">無料デモを見る →</a>
-      <a href="#features" class="btn-outline" data-i18n="hero_cta2">機能を見る</a>
+      <a href="#solutions" class="btn-primary" data-i18n="hero_cta1">デモを見る →</a>
+      <a href="#contact" class="btn-outline" data-i18n="hero_cta2">相談する</a>
     </div>
   </div>
 
@@ -817,6 +932,54 @@
     <div class="stat-label" data-i18n="stat4_label">顧客満足度</div>
   </div>
 </div>
+
+<!-- SOLUTIONS -->
+<section class="solutions" id="solutions">
+  <div class="solutions-header reveal">
+    <div class="section-tag">// SOLUTIONS</div>
+    <h2 class="section-title" data-i18n="solutions_title">業種別のITシステム開発。</h2>
+    <p class="section-desc" data-i18n="solutions_desc">まずは動くデモで確認。商談、現場ヒアリング、改善を重ねて、使いやすい業務システムに育てます。</p>
+  </div>
+  <div class="solutions-grid">
+    <article class="solution-card reveal">
+      <div class="solution-icon">🍺</div>
+      <div class="solution-kicker">LIVE DEMO</div>
+      <h3 class="solution-title" data-i18n="solution_izakaya_title">居酒屋・飲食店注文システム</h3>
+      <p class="solution-text" data-i18n="solution_izakaya_text">スマホ注文、厨房表示、会計、外卖・自取、管理画面まで一連の流れを演示できます。</p>
+      <div class="solution-actions">
+        <a class="solution-link" href="order/?table=3" data-i18n="solution_demo_order">注文デモ</a>
+        <a class="solution-link secondary" href="takeout/" data-i18n="solution_demo_takeout">テイクアウトデモ</a>
+      </div>
+    </article>
+    <article class="solution-card disabled reveal">
+      <div class="solution-icon">🚗</div>
+      <div class="solution-kicker" data-i18n="solution_status_planning">準備中</div>
+      <h3 class="solution-title" data-i18n="solution_car_title">中古車取引システム</h3>
+      <p class="solution-text" data-i18n="solution_car_text">中古車販売店・個人販売業者・小規模車両販売店向けに、在庫管理、車両詳細、査定問い合わせ、顧客フォロー、商談記録、成約管理を一元化します。</p>
+      <div class="solution-actions">
+        <span class="solution-link disabled" data-i18n="solution_car_button">開発状態を見る</span>
+      </div>
+    </article>
+    <article class="solution-card disabled reveal">
+      <div class="solution-icon">♻️</div>
+      <div class="solution-kicker" data-i18n="solution_status_planning">準備中</div>
+      <h3 class="solution-title" data-i18n="solution_recycle_title">再生資源回収システム</h3>
+      <p class="solution-text" data-i18n="solution_recycle_text">資源回収会社、スクラップ業者、金属リサイクル会社、法人回収サービス向けに、回収予約、顧客情報、品目別計量、ルート配車、精算・支払、経営レポートを一元管理します。</p>
+      <div class="solution-actions">
+        <span class="solution-link disabled" data-i18n="solution_recycle_button">計画を見る</span>
+      </div>
+    </article>
+    <article class="solution-card disabled reveal">
+      <div class="solution-icon">🏠</div>
+      <div class="solution-kicker">NEXT</div>
+      <h3 class="solution-title" data-i18n="solution_realestate_title">不動産仲介システム</h3>
+      <p class="solution-text" data-i18n="solution_realestate_text">物件管理、内見予約、顧客追跡、契約進捗を見える化するシステムを設計します。</p>
+      <div class="solution-actions">
+        <span class="solution-link disabled" data-i18n="solution_coming">準備中</span>
+      </div>
+    </article>
+  </div>
+</section>
 
 <!-- FEATURES -->
 <section class="features" id="features">
@@ -1238,16 +1401,33 @@
 // ── INTERNATIONALIZATION ──
 const i18n = {
   ja: {
-    nav_features: '機能', nav_how: '導入の流れ', nav_pricing: '料金',
+    nav_solutions: 'サービス', nav_features: '機能', nav_how: '導入の流れ', nav_pricing: '料金',
     nav_contact: 'お問い合わせ', nav_cta: '無料相談する',
-    hero_badge: '🍺 居酒屋・酒場専用ITシステム',
+    hero_badge: '現場に合わせるITシステム開発',
+    hero_title: '業務に合うITシステムを、<br><span class="accent">速く</span>、使いやすく。',
     hero_h1_accent1: '楽に', hero_h1_accent2: '稼ぐ',
-    hero_sub: '小さなお店を、スマートに動かす。',
-    hero_desc: '注文・会計・在庫・売上まで、すべてをひとつのシステムで。難しい操作はいりません。タブレット一台で、今日から始められます。',
-    hero_cta1: '無料デモを見る →', hero_cta2: '機能を見る',
+    hero_sub: '日本の小規模事業者向けに、実際に使える業務システムを作ります。',
+    hero_desc: '予約・注文・会計・在庫・顧客管理・マッチングまで、業種ごとの仕事の流れに合わせて設計。まず触れるデモを作り、現場で確認しながら改善していきます。',
+    hero_cta1: 'デモを見る →', hero_cta2: '相談する',
     stat_unit_min: '分', stat_unit_yen: '円',
     stat1_label: 'セットアップ時間', stat2_label: '初期費用',
     stat3_label: 'サポート対応', stat4_label: '顧客満足度',
+    solutions_title: '業種別のITシステム開発。',
+    solutions_desc: 'まずは動くデモで確認。商談、現場ヒアリング、改善を重ねて、使いやすい業務システムに育てます。',
+    solution_izakaya_title: '居酒屋・飲食店注文システム',
+    solution_izakaya_text: 'スマホ注文、厨房表示、会計、テイクアウト・デリバリー、管理画面まで一連の流れを演示できます。',
+    solution_demo_order: '注文デモ',
+    solution_demo_takeout: 'テイクアウトデモ',
+    solution_status_planning: '準備中',
+    solution_car_title: '中古車取引システム',
+    solution_car_text: '中古車販売店・個人販売業者・小規模車両販売店向けに、在庫管理、車両詳細、査定問い合わせ、顧客フォロー、商談記録、成約管理を一元化します。',
+    solution_car_button: '開発状態を見る',
+    solution_recycle_title: '再生資源回収システム',
+    solution_recycle_text: '資源回収会社、スクラップ業者、金属リサイクル会社、法人回収サービス向けに、回収予約、顧客情報、品目別計量、ルート配車、精算・支払、経営レポートを一元管理します。',
+    solution_recycle_button: '計画を見る',
+    solution_realestate_title: '不動産仲介システム',
+    solution_realestate_text: '物件管理、内見予約、顧客追跡、契約進捗を見える化するシステムを設計します。',
+    solution_coming: '準備中',
     feat_title: '必要なものが、全部入っています。',
     feat_desc: '複雑な設定は不要。直感的な操作で、誰でもすぐに使いこなせます。',
     feat1_title: 'タブレット注文', feat1_text: 'お客様がタブレットから直接注文。スタッフの手間を大幅に削減。ミスオーダーもゼロに。',
@@ -1289,16 +1469,33 @@ const i18n = {
     testi3_name: '山本 拓也さん', testi3_shop: '焼き鳥「やまもと」オーナー・名古屋市',
   },
   zh: {
-    nav_features: '功能', nav_how: '导入流程', nav_pricing: '价格',
+    nav_solutions: '服务', nav_features: '功能', nav_how: '导入流程', nav_pricing: '价格',
     nav_contact: '联系我们', nav_cta: '免费咨询',
-    hero_badge: '🍺 居酒屋・酒吧专用IT系统',
+    hero_badge: '贴合现场的IT系统开发',
+    hero_title: '为业务定制IT系统，<br><span class="accent">快速</span>、好用、能落地。',
     hero_h1_accent1: '轻松', hero_h1_accent2: '盈利',
-    hero_sub: '让小店运营更智能。',
-    hero_desc: '点单、收银、库存、营收，一个系统全搞定。操作简单，一台平板，今天就能上手。',
-    hero_cta1: '免费体验 →', hero_cta2: '查看功能',
+    hero_sub: '面向日本本地小型商家，开发真正能在现场使用的业务系统。',
+    hero_desc: '预约、点单、收银、库存、客户管理、撮合交易等，都可以根据行业流程设计。先做可操作的演示，再到现场确认并持续改善。',
+    hero_cta1: '查看演示 →', hero_cta2: '联系咨询',
     stat_unit_min: '分钟', stat_unit_yen: '¥0',
     stat1_label: '快速安装', stat2_label: '零初始费用',
     stat3_label: '全天支持', stat4_label: '客户满意度',
+    solutions_title: '按行业开发IT系统。',
+    solutions_desc: '先用可操作的 demo 确认方向，再通过商谈、现场调研和迭代改善，把系统做成商家真正愿意每天使用的工具。',
+    solution_izakaya_title: '居酒屋・餐饮点菜系统',
+    solution_izakaya_text: '可演示手机点菜、厨房接单、收银结账、外卖自取、后台管理的一整套流程。',
+    solution_demo_order: '点菜演示',
+    solution_demo_takeout: '外卖演示',
+    solution_status_planning: '准备中',
+    solution_car_title: '二手车交易系统',
+    solution_car_text: '为日本本地二手车商、个人车商和小型车行设计，统一管理车辆库存、车辆详情、估价询盘、客户跟进、商谈记录和成交流程。',
+    solution_car_button: '查看开发状态',
+    solution_recycle_title: '再生资源回收系统',
+    solution_recycle_text: '面向资源回收公司、废品回收站、金属回收和企业回收服务商，展示如何管理回收预约、客户信息、品类称重、路线与司机安排、结算付款和经营统计。',
+    solution_recycle_button: '查看规划',
+    solution_realestate_title: '房产中介系统',
+    solution_realestate_text: '规划房源管理、看房预约、客户跟进、合同进度等可视化系统。',
+    solution_coming: '准备中',
     feat_title: '您需要的，全都有。',
     feat_desc: '无需复杂设置，直觉操作，任何人都能立即上手。',
     feat1_title: '平板点单', feat1_text: '顾客直接在平板上点菜，大幅减少员工工作量，杜绝错误下单。',
@@ -1340,16 +1537,33 @@ const i18n = {
     testi3_name: '山本 拓也', testi3_shop: '烤鸡串「やまもと」老板・名古屋市',
   },
   en: {
-    nav_features: 'Features', nav_how: 'How It Works', nav_pricing: 'Pricing',
+    nav_solutions: 'Services', nav_features: 'Features', nav_how: 'How It Works', nav_pricing: 'Pricing',
     nav_contact: 'Contact', nav_cta: 'Free Consultation',
-    hero_badge: '🍺 IT System for Izakayas & Bars',
+    hero_badge: 'Practical IT system development',
+    hero_title: 'Business systems that fit your workflow,<br><span class="accent">fast</span> and easy to use.',
     hero_h1_accent1: 'Easier', hero_h1_accent2: 'Profitable',
-    hero_sub: 'Run your small restaurant smarter.',
-    hero_desc: 'Orders, billing, inventory, and sales — all in one system. No complicated setup. Get started today with just one tablet.',
-    hero_cta1: 'See Free Demo →', hero_cta2: 'View Features',
+    hero_sub: 'We build practical systems for small local businesses in Japan.',
+    hero_desc: 'Ordering, booking, billing, inventory, customer management, and matching workflows can be designed around each industry. We start with a usable demo, validate it on site, then improve it with you.',
+    hero_cta1: 'View Demos →', hero_cta2: 'Contact Us',
     stat_unit_min: 'min', stat_unit_yen: '¥0',
     stat1_label: 'Setup Time', stat2_label: 'Setup Fee',
     stat3_label: 'Support', stat4_label: 'Satisfaction',
+    solutions_title: 'Industry-focused IT systems.',
+    solutions_desc: 'Start with a working demo, then refine it through business discussions, on-site observation, and practical iteration.',
+    solution_izakaya_title: 'Izakaya & Restaurant Ordering',
+    solution_izakaya_text: 'Demo the full flow: mobile ordering, kitchen display, checkout, takeout/delivery, and admin management.',
+    solution_demo_order: 'Order Demo',
+    solution_demo_takeout: 'Takeout Demo',
+    solution_status_planning: 'Planning',
+    solution_car_title: 'Used Car Transaction System',
+    solution_car_text: 'A transaction management demo for used car dealers in Japan, covering inventory, vehicle details, appraisal inquiries, customer follow-up, negotiation records, and deal management.',
+    solution_car_button: 'View Status',
+    solution_recycle_title: 'Recycling Operations System',
+    solution_recycle_text: 'An industry demo for recycling companies, scrap yards, metal recyclers, and business pickup providers, covering pickup reservations, customers, weighing, route dispatch, settlement, payment tracking, and reporting.',
+    solution_recycle_button: 'View Plan',
+    solution_realestate_title: 'Real Estate Agency System',
+    solution_realestate_text: 'Planned workflow for property listings, viewing appointments, customer follow-up, and contract progress.',
+    solution_coming: 'Coming Soon',
     feat_title: 'Everything you need, included.',
     feat_desc: 'No complex setup required. Intuitive operation anyone can master instantly.',
     feat1_title: 'Tablet Ordering', feat1_text: 'Customers order directly from tablets. Reduce staff workload significantly and eliminate order mistakes.',

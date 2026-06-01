@@ -146,5 +146,12 @@ assert.strictEqual(deliveryOrder.deliveryFee, 300);
 assert.strictEqual(deliveryOrder.total, 720);
 core.checkoutOrder(deliveryOrder.id, { method: 'paypay', receivedAmount: 720 });
 assert.strictEqual(core.paymentHistory().records[0].orderId, deliveryOrder.id);
+const overview = core.businessOverview();
+assert.strictEqual(overview.orderCount, 2);
+assert.strictEqual(overview.paidCount, 1);
+assert.strictEqual(overview.openCount, 1);
+assert.strictEqual(overview.salesTotal, 720);
+assert.strictEqual(overview.openTotal, 480);
+assert.deepStrictEqual(overview.byType, { dineIn: 0, pickup: 1, delivery: 1 });
 
 console.log('izakaya core tests passed');

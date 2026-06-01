@@ -7,6 +7,12 @@
   const statusText = (status) => t(`status_${status}`);
   const paymentText = (method) => t(`pay_${method}`) === `pay_${method}` ? method : t(`pay_${method}`);
 
+  function elapsedMinutes(isoTime) {
+    const createdAt = new Date(isoTime).getTime();
+    if (!createdAt) return 0;
+    return Math.max(0, Math.floor((Date.now() - createdAt) / 60000));
+  }
+
   function notify(message) {
     const old = document.querySelector('.toast');
     if (old) old.remove();
@@ -196,20 +202,32 @@
   function mountKitchen() {
     function kitchenOrderMarkup(order) {
       const itemCount = order.lines.reduce((sum, line) => sum + line.quantity, 0);
+      const minutes = elapsedMinutes(order.createdAt);
+      const isRush = (order.status === 'new' && minutes >= 10) || (order.status === 'preparing' && minutes >= 20);
+      const orderTypeClass = order.orderType === 'delivery' ? 'delivery' : order.orderType === 'pickup' ? 'pickup' : 'dine-in';
+      const lineNotes = order.lines.filter((line) => line.note).map((line) => `${line.nameJa}: ${line.note}`);
+      const fulfillmentNote = order.fulfillment?.note ? [order.fulfillment.note] : [];
+      const notes = [...lineNotes, ...fulfillmentNote];
       return `
-        <article class="card order-card kitchen-ticket">
+        <article class="card order-card kitchen-ticket ${orderTypeClass} ${isRush ? 'rush' : ''}">
           <div class="ticket-head">
             <div>
-              <span class="status ${order.status}">${statusText(order.status)}</span>
+              <div class="ticket-badges">
+                <span class="status ${order.status}">${statusText(order.status)}</span>
+                <span class="order-type ${orderTypeClass}">${t(`order_type_${order.orderType || 'dine-in'}`)}</span>
+                ${isRush ? `<span class="rush-badge">${t('rush_order')}</span>` : ''}
+              </div>
               <h2>${orderLabel(order)}</h2>
               <div class="meta">
                 <span>${new Date(order.createdAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</span>
+                <span>${t('elapsed_minutes', { count: minutes })}</span>
                 <span>${t('item_count', { count: itemCount })}</span>
                 ${fulfillmentMeta(order) ? `<span>${fulfillmentMeta(order)}</span>` : ''}
               </div>
             </div>
             <div class="price">${yen(order.total)}</div>
           </div>
+          ${notes.length ? `<div class="note-alert"><strong>${t('kitchen_notes')}</strong>${notes.map((note) => `<span>${note}</span>`).join('')}</div>` : ''}
           <div>${orderLinesMarkup(order)}</div>
           <div class="btn-row">
             ${order.status === 'new' ? `<button class="btn warn" data-status="${order.id}:preparing">${t('action_preparing')}</button>` : ''}
@@ -258,15 +276,60 @@
     const cartId = 'takeout';
     let selectedCategory = 'all';
     let fulfillmentMethod = 'pickup';
+    let confirmedOrder = null;
 
     function deliveryFee() {
       return fulfillmentMethod === 'delivery' ? 300 : 0;
+    }
+
+    function renderConfirmation() {
+      const confirmation = document.querySelector('[data-takeout-confirmation]');
+      if (!confirmation) return;
+      if (!confirmedOrder) {
+        confirmation.hidden = true;
+        confirmation.innerHTML = '';
+        return;
+      }
+      confirmation.hidden = false;
+      confirmation.innerHTML = `
+        <div class="confirmation-icon">✓</div>
+        <div>
+          <div class="eyebrow">${t('takeout_confirm_eyebrow')}</div>
+          <h3>${t('takeout_confirm_title')}</h3>
+          <p class="muted">${t('takeout_confirm_desc')}</p>
+        </div>
+        <div class="confirm-detail">
+          <span>${t('order_number')}</span>
+          <strong>${confirmedOrder.id}</strong>
+        </div>
+        <div class="confirm-detail">
+          <span>${t('fulfillment_method')}</span>
+          <strong>${t(`order_type_${confirmedOrder.orderType}`)}</strong>
+        </div>
+        <div class="confirm-detail">
+          <span>${t('requested_time')}</span>
+          <strong>${confirmedOrder.fulfillment?.requestedAt || '-'}</strong>
+        </div>
+        <div class="confirm-detail">
+          <span>${t('total')}</span>
+          <strong class="price">${yen(confirmedOrder.total)}</strong>
+        </div>
+        <div class="confirm-detail">
+          <span>${t('store_phone')}</span>
+          <strong>03-0000-0000</strong>
+        </div>
+        <div class="btn-row">
+          <button class="btn ghost" type="button" data-continue-takeout>${t('continue_ordering')}</button>
+          <a class="btn ghost" href="../kitchen/">${t('view_kitchen_demo')}</a>
+        </div>
+      `;
     }
 
     function render() {
       i18n?.applyLang(i18n.getLang());
       const store = core.loadStore();
       const cart = core.loadCart(cartId);
+      renderConfirmation();
       document.querySelectorAll('[data-fulfillment]').forEach((button) => {
         button.classList.toggle('active', button.dataset.fulfillment === fulfillmentMethod);
       });
@@ -332,6 +395,7 @@
       }
       const add = event.target.closest('[data-add]');
       if (add) {
+        confirmedOrder = null;
         core.addToCart(cartId, add.dataset.add);
         render();
       }
@@ -370,7 +434,13 @@
           deliveryFee: deliveryFee()
         });
         core.clearCart?.(cartId);
+        confirmedOrder = order;
         notify(`${t('accepted')}: ${order.id}`);
+        render();
+      }
+      const continueTakeout = event.target.closest('[data-continue-takeout]');
+      if (continueTakeout) {
+        confirmedOrder = null;
         render();
       }
     });
@@ -416,6 +486,12 @@
       const outsideOrders = openOrders.filter((order) => order.orderType !== 'dine-in');
       if (selectedOutsideOrderId && !outsideOrders.some((order) => order.id === selectedOutsideOrderId)) selectedOutsideOrderId = '';
       const payments = core.paymentHistory();
+      const overview = core.businessOverview();
+      document.querySelector('[data-business-date]').textContent = overview.date;
+      document.querySelector('[data-today-orders]').textContent = overview.orderCount;
+      document.querySelector('[data-today-sales]').textContent = yen(overview.salesTotal);
+      document.querySelector('[data-open-amount]').textContent = yen(overview.openTotal);
+      document.querySelector('[data-order-mix]').textContent = `${t('order_type_dine_in')} ${overview.byType.dineIn} / ${t('order_type_pickup')} ${overview.byType.pickup} / ${t('order_type_delivery')} ${overview.byType.delivery}`;
       document.querySelector('[data-tables]').innerHTML = store.tables.map((table) => {
         const total = openOrders.filter((order) => order.tableId === table.id).reduce((sum, order) => sum + order.total, 0);
         return `<button class="tab ${selectedTable === table.id ? 'active' : ''}" data-table="${table.id}">${table.area}-${table.id} · ${table.seats}${t('seats')} · ${total ? yen(total) : t('available')}</button>`;

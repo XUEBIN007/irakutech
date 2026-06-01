@@ -332,6 +332,34 @@
     };
   }
 
+  function businessOverview(now = new Date()) {
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    const todayOrders = loadStore().orders.filter((order) => {
+      const createdAt = new Date(order.createdAt);
+      return createdAt >= start && createdAt < end;
+    });
+    const openOrders = todayOrders.filter((order) => order.paymentStatus !== 'paid');
+    const paidOrders = todayOrders.filter((order) => order.paymentStatus === 'paid');
+    const byType = { dineIn: 0, pickup: 0, delivery: 0 };
+    todayOrders.forEach((order) => {
+      if (order.orderType === 'pickup') byType.pickup += 1;
+      else if (order.orderType === 'delivery') byType.delivery += 1;
+      else byType.dineIn += 1;
+    });
+    return {
+      date: start.toISOString().slice(0, 10),
+      orderCount: todayOrders.length,
+      paidCount: paidOrders.length,
+      openCount: openOrders.length,
+      salesTotal: paidOrders.reduce((sum, order) => sum + order.total, 0),
+      openTotal: openOrders.reduce((sum, order) => sum + order.total, 0),
+      byType
+    };
+  }
+
   function upsertMenuItem(item) {
     const store = loadStore();
     const normalized = { ...item, price: Number(item.price), soldOut: Boolean(item.soldOut), recommended: Boolean(item.recommended) };
@@ -421,6 +449,7 @@
     checkoutTable,
     checkoutOrder,
     paymentHistory,
+    businessOverview,
     upsertMenuItem,
     toggleSoldOut,
     upsertTable,

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>会計 | 居楽テック</title>
-  <link rel="stylesheet" href="../assets/izakaya-app.css">
+  <link rel="stylesheet" href="../assets/izakaya-app.css?v=20260530c">
 </head>
 <body data-view="checkout">
   <div class="app-shell">
@@ -33,6 +33,30 @@
           <p class="muted" data-i18n="checkout_desc">未会計の注文をテーブルごとにまとめて精算します。</p>
         </div>
       </div>
+      <section class="card overview-card">
+        <div class="section-head">
+          <h2 data-i18n="business_overview">今日の営業概況</h2>
+          <span class="muted" data-business-date></span>
+        </div>
+        <div class="overview-grid">
+          <div class="overview-tile">
+            <span data-i18n="today_orders">今日の注文</span>
+            <strong data-today-orders>0</strong>
+          </div>
+          <div class="overview-tile">
+            <span data-i18n="today_sales">今日の売上</span>
+            <strong class="price" data-today-sales>¥0</strong>
+          </div>
+          <div class="overview-tile">
+            <span data-i18n="open_amount">未会計金額</span>
+            <strong class="price" data-open-amount>¥0</strong>
+          </div>
+          <div class="overview-tile">
+            <span data-i18n="order_mix">注文内訳</span>
+            <strong data-order-mix>0 / 0 / 0</strong>
+          </div>
+        </div>
+      </section>
       <div class="grid layout-two">
         <section>
           <div class="tabs" data-tables></div>
@@ -78,8 +102,8 @@
       </section>
     </main>
   </div>
-  <script src="../assets/izakaya-core.js"></script>
-  <script src="../assets/izakaya-i18n.js"></script>
-  <script src="../assets/izakaya-ui.js"></script>
+  <script src="../assets/izakaya-core.js?v=20260530c"></script>
+  <script src="../assets/izakaya-i18n.js?v=20260530c"></script>
+  <script src="../assets/izakaya-ui.js?v=20260530c"></script>
 </body>
 </html>
