@@ -6,6 +6,11 @@
   const t = (key, params) => i18n ? i18n.t(key, params) : key;
   const statusText = (status) => t(`status_${status}`);
   const paymentText = (method) => t(`pay_${method}`) === `pay_${method}` ? method : t(`pay_${method}`);
+  const formatMinutes = (minutes) => {
+    const total = Number(minutes || 0);
+    return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+  };
+  const todayKey = () => new Date().toISOString().slice(0, 10);
 
   function elapsedMinutes(isoTime) {
     const createdAt = new Date(isoTime).getTime();
@@ -479,6 +484,15 @@
       changeTotal.textContent = difference < 0 ? `${t('short_amount')} ${yen(Math.abs(difference))}` : yen(difference);
       changeTotal.classList.toggle('danger-text', difference < 0);
     }
+    function renderCloseDifference(report) {
+      const input = document.querySelector('[data-close-form] [name="cashActual"]');
+      const output = document.querySelector('[data-cash-difference]');
+      if (!input || !output) return;
+      const actual = input.value === '' ? 0 : Number(input.value);
+      const difference = actual - report.cashExpected;
+      output.textContent = yen(difference);
+      output.classList.toggle('danger-text', difference < 0);
+    }
     function render() {
       i18n?.applyLang(i18n.getLang());
       const store = core.loadStore();
@@ -487,6 +501,8 @@
       if (selectedOutsideOrderId && !outsideOrders.some((order) => order.id === selectedOutsideOrderId)) selectedOutsideOrderId = '';
       const payments = core.paymentHistory();
       const overview = core.businessOverview();
+      const report = core.dailyReport();
+      const closeHistory = core.dailyCloseHistory();
       document.querySelector('[data-business-date]').textContent = overview.date;
       document.querySelector('[data-today-orders]').textContent = overview.orderCount;
       document.querySelector('[data-today-sales]').textContent = yen(overview.salesTotal);
@@ -494,8 +510,25 @@
       document.querySelector('[data-order-mix]').textContent = `${t('order_type_dine_in')} ${overview.byType.dineIn} / ${t('order_type_pickup')} ${overview.byType.pickup} / ${t('order_type_delivery')} ${overview.byType.delivery}`;
       document.querySelector('[data-tables]').innerHTML = store.tables.map((table) => {
         const total = openOrders.filter((order) => order.tableId === table.id).reduce((sum, order) => sum + order.total, 0);
-        return `<button class="tab ${selectedTable === table.id ? 'active' : ''}" data-table="${table.id}">${table.area}-${table.id} · ${table.seats}${t('seats')} · ${total ? yen(total) : t('available')}</button>`;
+        const tableMeta = table.guestCount ? `${table.guestCount}${t('seats')}` : `${table.seats}${t('seats')}`;
+        return `<button class="tab ${selectedTable === table.id ? 'active' : ''}" data-table="${table.id}">${table.area}-${table.id} · ${tableMeta} · ${total ? yen(total) : t('available')}${table.note ? ` · ${table.note}` : ''}</button>`;
       }).join('');
+      const tableOptions = store.tables.map((table) => `<option value="${table.id}">${table.area}-${table.id}</option>`).join('');
+      document.querySelector('[data-table-ops-form] [name="fromTable"]').innerHTML = tableOptions;
+      document.querySelector('[data-table-ops-form] [name="toTable"]').innerHTML = tableOptions;
+      document.querySelector('[data-table-ops-form] [name="fromTable"]').value = selectedTable;
+      if (!document.querySelector('[data-table-ops-form] [name="toTable"]').value) {
+        document.querySelector('[data-table-ops-form] [name="toTable"]').value = store.tables[0]?.id || '';
+      }
+      document.querySelector('[data-table-events]').innerHTML = store.tableEvents.slice(0, 6).map((event) => `
+        <div class="table-line">
+          <div>
+            <strong>${t(event.type === 'open' ? 'open_table' : event.type === 'transfer' ? 'transfer_table' : event.type === 'merge' ? 'merge_table' : 'clear_table')}</strong>
+            <div class="muted">${event.fromTableId ? `${event.fromTableId} → ${event.toTableId}` : event.tableId}${event.note ? ` · ${event.note}` : ''}</div>
+          </div>
+          <span class="muted">${new Date(event.createdAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+      `).join('') || `<div class="empty small">${t('payment_history_empty')}</div>`;
       const tableOrders = openOrders.filter((order) => order.tableId === selectedTable);
       const total = tableOrders.reduce((sum, order) => sum + order.total, 0);
       document.querySelector('[data-checkout-orders]').innerHTML = tableOrders.length ? tableOrders.map(orderMarkup).join('') : `<div class="empty">${t('checkout_empty')}</div>`;
@@ -528,6 +561,21 @@
           <div class="price">${yen(record.total)}</div>
         </div>
       `).join('') : `<div class="empty small">${t('payment_history_empty')}</div>`;
+      document.querySelector('[data-cash-expected]').textContent = yen(report.cashExpected);
+      document.querySelector('[data-close-open]').textContent = yen(report.openTotal);
+      const closeWarning = document.querySelector('[data-close-warning]');
+      if (closeWarning) closeWarning.hidden = report.readyToClose;
+      document.querySelector('[data-close-history]').innerHTML = closeHistory.length ? closeHistory.map((record) => `
+        <div class="payment-line">
+          <div>
+            <strong>${record.date}</strong>
+            <div class="muted">${t('cash_expected')}: ${yen(record.cashExpected)} · ${t('cash_actual')}: ${yen(record.cashActual)} · ${t('cash_difference')}: ${yen(record.cashDifference)}</div>
+            ${record.note ? `<div class="muted">${record.note}</div>` : ''}
+          </div>
+          <div class="price">${yen(record.salesTotal)}</div>
+        </div>
+      `).join('') : `<div class="empty small">${t('payment_history_empty')}</div>`;
+      renderCloseDifference(report);
       renderChange();
     }
     document.addEventListener('click', (event) => {
@@ -562,8 +610,37 @@
         render();
       }
     });
+    document.querySelector('[data-close-form]').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const report = core.dailyReport();
+      const cashActual = form.get('cashActual') === '' ? report.cashExpected : Number(form.get('cashActual'));
+      const record = core.closeBusinessDay({
+        date: report.date,
+        cashActual,
+        note: form.get('note')
+      });
+      notify(`${t('close_saved')}: ${yen(record.cashDifference)}`);
+      render();
+    });
+    document.querySelector('[data-table-ops-form]').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const action = form.get('action');
+      const fromTable = form.get('fromTable');
+      const toTable = form.get('toTable');
+      const note = form.get('note');
+      if (action === 'open') core.openTable(fromTable, { guestCount: Number(form.get('guestCount')), note });
+      if (action === 'transfer') core.transferTable(fromTable, toTable, { note });
+      if (action === 'merge') core.mergeTables(fromTable, toTable, { note });
+      if (action === 'clear') core.clearTable(fromTable, { note });
+      selectedTable = action === 'transfer' || action === 'merge' ? toTable : fromTable;
+      notify(t('table_operation_done'));
+      render();
+    });
     document.addEventListener('input', (event) => {
       if (event.target.closest('[data-received-amount]')) renderChange();
+      if (event.target.closest('[data-close-form] [name="cashActual"]')) renderCloseDifference(core.dailyReport());
     });
     window.addEventListener('storage', render);
     window.addEventListener('irakutech:lang', render);
@@ -571,6 +648,8 @@
   }
 
   function mountAdmin() {
+    let inventoryFilter = 'all';
+
     function appBasePath() {
       const marker = '/admin/';
       const path = window.location.pathname;
@@ -589,6 +668,11 @@
     function render() {
       i18n?.applyLang(i18n.getLang());
       const store = core.loadStore();
+      const inventory = core.inventoryStatus();
+      const report = core.dailyReport();
+      const labor = core.laborSummary();
+      const customers = core.customerProfiles();
+      const inventoryItems = inventoryFilter === 'low' ? inventory.lowStock : inventory.items;
       document.querySelector('[data-admin-menu]').innerHTML = store.menu.map((item) => `
         <div class="admin-line">
           <div>
@@ -603,6 +687,89 @@
       `).join('');
       document.querySelector('[name="categoryId"]').innerHTML = store.categories.map((category) => `<option value="${category.id}">${category.nameJa} / ${category.nameZh}</option>`).join('');
       document.querySelector('[data-admin-tables]').innerHTML = store.tables.map((table) => `<div class="table-line"><strong>${table.area}-${table.id}</strong><span>${table.seats}${t('seats')} · ${table.enabled ? table.status : t('disable_table')}</span></div>`).join('');
+      document.querySelector('[data-low-stock-count]').textContent = `${t('low_stock')} ${inventory.lowStock.length}`;
+      document.querySelector('[data-inventory-form] [name="menuItemId"]').innerHTML = store.menu.map((item) => `<option value="${item.id}">${itemName(item)}</option>`).join('');
+      document.querySelector('[data-movement-form] [name="menuItemId"]').innerHTML = store.menu.map((item) => `<option value="${item.id}">${itemName(item)}</option>`).join('');
+      document.querySelectorAll('[data-inventory-filter]').forEach((button) => {
+        button.classList.toggle('active', button.dataset.inventoryFilter === inventoryFilter);
+      });
+      document.querySelector('[data-inventory-list]').innerHTML = inventoryItems.map((item) => `
+        <div class="admin-line ${item.lowStock ? 'attention-line' : ''}">
+          <div>
+            <strong>${item.nameJa} / ${item.nameZh}</strong>
+            <div class="muted">${t('stock')}: ${item.stock} · ${t('safety_stock')}: ${item.safetyStock}</div>
+          </div>
+          <div class="btn-row">
+            <span class="status ${item.lowStock ? 'new' : 'done'}">${item.lowStock ? t('low_stock') : t('selling')}</span>
+            <button class="btn ghost" data-edit-inventory="${item.menuItemId}">${t('edit')}</button>
+          </div>
+        </div>
+      `).join('') || `<div class="empty small">${t('payment_history_empty')}</div>`;
+      document.querySelector('[data-inventory-movements]').innerHTML = core.inventoryMovements().slice(0, 8).map((entry) => {
+        const item = store.menu.find((menuItem) => menuItem.id === entry.menuItemId);
+        return `
+          <div class="table-line">
+            <div>
+              <strong>${item ? item.nameJa : entry.menuItemId}</strong>
+              <div class="muted">${t(entry.type)} · ${entry.note || '-'}</div>
+            </div>
+            <span class="price">${entry.quantity > 0 ? '+' : ''}${entry.quantity} / ${entry.stockAfter}</span>
+          </div>
+        `;
+      }).join('') || `<div class="empty small">${t('payment_history_empty')}</div>`;
+      document.querySelector('[data-report-orders]').textContent = report.orderCount;
+      document.querySelector('[data-report-sales]').textContent = yen(report.salesTotal);
+      document.querySelector('[data-report-open]').textContent = yen(report.openTotal);
+      document.querySelector('[data-top-items]').innerHTML = report.topItems.length ? report.topItems.slice(0, 5).map((item) => `
+        <div class="table-line"><strong>${item.nameJa}</strong><span>${item.quantity} · ${yen(item.total)}</span></div>
+      `).join('') : `<div class="empty small">${t('payment_history_empty')}</div>`;
+      const paymentEntries = Object.entries(report.paymentMethods);
+      document.querySelector('[data-payment-methods]').innerHTML = paymentEntries.length ? paymentEntries.map(([method, total]) => `
+        <div class="table-line"><strong>${paymentText(method)}</strong><span class="price">${yen(total)}</span></div>
+      `).join('') : `<div class="empty small">${t('payment_history_empty')}</div>`;
+      document.querySelector('[data-on-duty-count]').textContent = `${t('on_duty')} ${labor.onDuty.length}`;
+      document.querySelector('[data-schedule-form] [name="staffId"]').innerHTML = labor.staff.map((staff) => `<option value="${staff.id}">${staff.name} / ${staff.role}</option>`).join('');
+      if (!document.querySelector('[data-schedule-form] [name="date"]').value) {
+        document.querySelector('[data-schedule-form] [name="date"]').value = todayKey();
+      }
+      document.querySelector('[data-labor-worked]').textContent = formatMinutes(labor.totals.workedMinutes);
+      document.querySelector('[data-labor-wage]').textContent = yen(labor.totals.estimatedWages);
+      document.querySelector('[data-staff-list]').innerHTML = labor.staff.map((staff) => {
+        const activeEntry = labor.entries.find((entry) => entry.staffId === staff.id && !entry.clockOut);
+        const dayEntry = labor.entries.find((entry) => entry.staffId === staff.id);
+        const schedule = labor.schedules.find((entry) => entry.staffId === staff.id);
+        return `
+          <div class="admin-line">
+            <div>
+              <strong>${staff.name}</strong>
+              <div class="muted">${staff.role} · ${staff.active ? t('enabled') : t('disable_table')} · ${t('hourly_wage')}: ${yen(staff.hourlyWage)}</div>
+              ${schedule ? `<div class="muted">${t('staff_schedule')}: ${schedule.startTime}-${schedule.endTime} · ${t('scheduled_time')}: ${formatMinutes(schedule.scheduledMinutes)}</div>` : ''}
+              ${dayEntry ? `<div class="muted">${t('worked_time')}: ${formatMinutes(dayEntry.workedMinutes)} · ${t('break_time')}: ${formatMinutes(dayEntry.breakMinutes)} · ${t('estimated_wage')}: ${yen(dayEntry.estimatedWage)}</div>` : ''}
+              ${dayEntry && (dayEntry.lateMinutes || dayEntry.earlyLeaveMinutes) ? `<div class="btn-row labor-alerts">${dayEntry.lateMinutes ? `<span class="status new">${t('late')} ${dayEntry.lateMinutes}m</span>` : ''}${dayEntry.earlyLeaveMinutes ? `<span class="status new">${t('early_leave')} ${dayEntry.earlyLeaveMinutes}m</span>` : ''}</div>` : ''}
+            </div>
+            <div class="btn-row">
+              <button class="btn ghost" data-edit-staff="${staff.id}">${t('edit')}</button>
+              ${!activeEntry ? `<button class="btn primary" data-clock="in:${staff.id}" ${staff.active ? '' : 'disabled'}>${t('clock_in')}</button>` : ''}
+              ${activeEntry?.status === 'working' ? `<button class="btn warn" data-clock="break:${staff.id}">${t('start_break')}</button><button class="btn danger" data-clock="out:${staff.id}">${t('clock_out')}</button>` : ''}
+              ${activeEntry?.status === 'break' ? `<button class="btn primary" data-clock="back:${staff.id}">${t('end_break')}</button><button class="btn danger" data-clock="out:${staff.id}">${t('clock_out')}</button>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+      document.querySelector('[data-customer-count]').textContent = customers.length;
+      document.querySelector('[data-customer-list]').innerHTML = customers.length ? customers.map((customer) => `
+        <div class="customer-line">
+          <div>
+            <strong>${customer.name || '-'}</strong>
+            <div class="muted">${customer.phone} · ${t('order_count')}: ${customer.orderCount} · ${t('total_spent')}: ${yen(customer.totalSpent)}</div>
+            <div class="muted">${t('last_order')}: ${customer.lastOrderId || '-'}</div>
+          </div>
+          <form class="customer-note-form" data-customer-note-form="${customer.phone}">
+            <input name="note" value="${customer.note || ''}" placeholder="${t('customer_note')}">
+            <button class="btn ghost" type="submit">${t('save_customer_note')}</button>
+          </form>
+        </div>
+      `).join('') : `<div class="empty small">${t('payment_history_empty')}</div>`;
       document.querySelector('[data-table-qr]').innerHTML = store.tables.map((table) => {
         const url = tableUrl(table);
         return `
@@ -656,6 +823,39 @@
           else field.value = value;
         });
       }
+      const editInventory = event.target.closest('[data-edit-inventory]');
+      if (editInventory) {
+        const item = core.inventoryStatus().items.find((entry) => entry.menuItemId === editInventory.dataset.editInventory);
+        const form = document.querySelector('[data-inventory-form]');
+        form.elements.menuItemId.value = item.menuItemId;
+        form.elements.stock.value = item.stock;
+        form.elements.safetyStock.value = item.safetyStock;
+      }
+      const inventoryFilterButton = event.target.closest('[data-inventory-filter]');
+      if (inventoryFilterButton) {
+        inventoryFilter = inventoryFilterButton.dataset.inventoryFilter;
+        render();
+      }
+      const editStaff = event.target.closest('[data-edit-staff]');
+      if (editStaff) {
+        const staff = core.laborSummary().staff.find((entry) => entry.id === editStaff.dataset.editStaff);
+        Object.entries(staff).forEach(([key, value]) => {
+          const field = document.querySelector(`[data-staff-form] [name="${key}"]`);
+          if (!field) return;
+          if (field.type === 'checkbox') field.checked = Boolean(value);
+          else field.value = value;
+        });
+      }
+      const clock = event.target.closest('[data-clock]');
+      if (clock) {
+        const [action, staffId] = clock.dataset.clock.split(':');
+        if (action === 'in') core.clockIn(staffId);
+        if (action === 'break') core.startBreak(staffId);
+        if (action === 'back') core.endBreak(staffId);
+        if (action === 'out') core.clockOut(staffId);
+        notify(t('timeclock_updated'));
+        render();
+      }
       const regenerateTable = event.target.closest('[data-regenerate-table]');
       if (regenerateTable) {
         core.regenerateTableToken(regenerateTable.dataset.regenerateTable);
@@ -707,6 +907,70 @@
       event.currentTarget.reset();
       event.currentTarget.elements.enabled.checked = true;
       notify(t('table_saved'));
+      render();
+    });
+
+    document.querySelector('[data-inventory-form]').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      core.adjustInventory(form.get('menuItemId'), {
+        stock: Number(form.get('stock')),
+        safetyStock: Number(form.get('safetyStock'))
+      });
+      notify(t('inventory_saved'));
+      render();
+    });
+
+    document.querySelector('[data-movement-form]').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      core.recordInventoryMovement(form.get('menuItemId'), {
+        type: form.get('type'),
+        quantity: Number(form.get('quantity')),
+        note: form.get('note')
+      });
+      event.currentTarget.elements.quantity.value = 1;
+      event.currentTarget.elements.note.value = '';
+      notify(t('movement_saved'));
+      render();
+    });
+
+    document.querySelector('[data-staff-form]').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      core.upsertStaff({
+        id: form.get('id'),
+        name: form.get('name'),
+        role: form.get('role'),
+        hourlyWage: Number(form.get('hourlyWage')),
+        active: form.get('active') === 'on'
+      });
+      event.currentTarget.reset();
+      event.currentTarget.elements.active.checked = true;
+      notify(t('staff_saved'));
+      render();
+    });
+
+    document.querySelector('[data-schedule-form]').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      core.upsertStaffSchedule({
+        staffId: form.get('staffId'),
+        date: form.get('date'),
+        startTime: form.get('startTime'),
+        endTime: form.get('endTime'),
+        breakMinutes: Number(form.get('breakMinutes'))
+      });
+      notify(t('schedule_saved'));
+      render();
+    });
+
+    document.addEventListener('submit', (event) => {
+      const form = event.target.closest('[data-customer-note-form]');
+      if (!form) return;
+      event.preventDefault();
+      core.updateCustomerNote(form.dataset.customerNoteForm, new FormData(form).get('note'));
+      notify(t('customer_note_saved'));
       render();
     });
 

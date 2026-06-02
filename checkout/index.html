@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>会計 | 居楽テック</title>
-  <link rel="stylesheet" href="../assets/izakaya-app.css?v=20260530c">
+  <link rel="stylesheet" href="../assets/izakaya-app.css?v=20260602f">
 </head>
 <body data-view="checkout">
   <div class="app-shell">
@@ -68,6 +68,20 @@
             </div>
             <div class="grid" data-outside-orders></div>
           </section>
+          <section class="card table-ops" style="margin-top:16px">
+            <div class="section-head">
+              <h2 data-i18n="table_operations">テーブル操作</h2>
+            </div>
+            <form class="field-grid" data-table-ops-form>
+              <label class="field"><span data-i18n="category">分類</span><select name="action"><option value="open" data-i18n="open_table">開台</option><option value="transfer" data-i18n="transfer_table">席移動</option><option value="merge" data-i18n="merge_table">テーブル結合</option><option value="clear" data-i18n="clear_table">清台</option></select></label>
+              <label class="field"><span data-i18n="from_table">移動元</span><select name="fromTable"></select></label>
+              <label class="field"><span data-i18n="to_table">移動先</span><select name="toTable"></select></label>
+              <label class="field"><span data-i18n="guest_count">人数</span><input name="guestCount" type="number" min="0" value="2"></label>
+              <label class="field full"><span data-i18n="table_note">テーブルメモ</span><input name="note" placeholder="予約名 / 移動理由 / 清掃メモ"></label>
+              <button class="btn ghost full" type="submit" data-i18n="table_operations">テーブル操作</button>
+            </form>
+            <div class="ops-list" data-table-events></div>
+          </section>
         </section>
         <aside class="card pay-panel">
           <h2 data-i18n="checkout_panel">会計</h2>
@@ -93,6 +107,30 @@
           <button class="btn primary" data-pay style="width:100%;margin-top:14px" data-i18n="checkout_submit">会計完了・清台</button>
         </aside>
       </div>
+      <section class="card close-panel" style="margin-top:16px">
+        <div class="section-head">
+          <h2 data-i18n="daily_close">日締め</h2>
+          <span class="status new" data-close-warning hidden data-i18n="unpaid_warning">未会計があります</span>
+        </div>
+        <div class="close-grid">
+          <div class="overview-grid compact">
+            <div class="overview-tile"><span data-i18n="cash_expected">現金予定</span><strong class="price" data-cash-expected>¥0</strong></div>
+            <div class="overview-tile"><span data-i18n="cash_difference">現金差額</span><strong class="price" data-cash-difference>¥0</strong></div>
+            <div class="overview-tile"><span data-i18n="open_amount">未会計金額</span><strong class="price" data-close-open>¥0</strong></div>
+          </div>
+          <form class="field-grid" data-close-form>
+            <label class="field"><span data-i18n="cash_actual">現金実額</span><input name="cashActual" type="number" min="0" step="1" inputmode="numeric" placeholder="0"></label>
+            <label class="field"><span data-i18n="close_note">日締めメモ</span><input name="note" placeholder="レジ点検"></label>
+            <button class="btn primary full" type="submit" data-i18n="close_business_day">日締め保存</button>
+          </form>
+        </div>
+      </section>
+      <section class="card" style="margin-top:16px">
+        <div class="section-head">
+          <h2 data-i18n="close_history">日締め履歴</h2>
+        </div>
+        <div class="payment-list" data-close-history></div>
+      </section>
       <section class="card" style="margin-top:16px">
         <div class="section-head">
           <h2 data-i18n="payment_history">收款记录</h2>
@@ -102,8 +140,8 @@
       </section>
     </main>
   </div>
-  <script src="../assets/izakaya-core.js?v=20260530c"></script>
-  <script src="../assets/izakaya-i18n.js?v=20260530c"></script>
-  <script src="../assets/izakaya-ui.js?v=20260530c"></script>
+  <script src="../assets/izakaya-core.js?v=20260602f"></script>
+  <script src="../assets/izakaya-i18n.js?v=20260602f"></script>
+  <script src="../assets/izakaya-ui.js?v=20260602f"></script>
 </body>
 </html>

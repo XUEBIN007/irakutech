@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>管理 | 居楽テック</title>
-  <link rel="stylesheet" href="../assets/izakaya-app.css?v=20260530c">
+  <link rel="stylesheet" href="../assets/izakaya-app.css?v=20260602f">
 </head>
 <body data-view="admin">
   <div class="app-shell">
@@ -68,14 +68,92 @@
           <div class="qr-grid" data-table-qr></div>
         </div>
       </section>
+      <div class="grid layout-two" style="margin-top:14px">
+        <section class="card">
+          <div class="section-head">
+            <h2 data-i18n="inventory_title">在庫管理</h2>
+            <span class="status new" data-low-stock-count>0</span>
+          </div>
+          <form class="field-grid" data-inventory-form>
+            <label class="field full"><span data-i18n="menu_edit">メニュー</span><select name="menuItemId"></select></label>
+            <label class="field"><span data-i18n="stock">在庫</span><input name="stock" type="number" min="0" value="0"></label>
+            <label class="field"><span data-i18n="safety_stock">安全在庫</span><input name="safetyStock" type="number" min="0" value="0"></label>
+            <button class="btn primary full" type="submit" data-i18n="save_inventory">在庫を保存</button>
+          </form>
+          <form class="field-grid compact-form" data-movement-form>
+            <label class="field full"><span data-i18n="inventory_movements">在庫履歴</span><select name="menuItemId"></select></label>
+            <label class="field"><span data-i18n="category">分類</span><select name="type"><option value="restock" data-i18n="restock">入庫</option><option value="waste" data-i18n="waste">ロス</option></select></label>
+            <label class="field"><span data-i18n="stock">数量</span><input name="quantity" type="number" min="1" value="1"></label>
+            <label class="field full"><span data-i18n="movement_note">理由・メモ</span><input name="note" placeholder="仕入れ / 破損 / 期限切れ"></label>
+            <button class="btn ghost full" type="submit" data-i18n="inventory_movements">在庫履歴</button>
+          </form>
+          <div class="btn-row inventory-filter">
+            <button class="btn ghost active" type="button" data-inventory-filter="all" data-i18n="all_inventory">全在庫</button>
+            <button class="btn ghost" type="button" data-inventory-filter="low" data-i18n="show_low_stock_only">低在庫のみ表示</button>
+          </div>
+          <div class="ops-list" data-inventory-list></div>
+          <h3 data-i18n="inventory_movements">在庫履歴</h3>
+          <div class="ops-list" data-inventory-movements></div>
+        </section>
+        <aside class="card">
+          <h2 data-i18n="daily_report">営業日報</h2>
+          <div class="overview-grid compact">
+            <div class="overview-tile"><span data-i18n="today_orders">今日の注文</span><strong data-report-orders>0</strong></div>
+            <div class="overview-tile"><span data-i18n="today_sales">今日の売上</span><strong class="price" data-report-sales>¥0</strong></div>
+            <div class="overview-tile"><span data-i18n="open_amount">未会計金額</span><strong class="price" data-report-open>¥0</strong></div>
+          </div>
+          <h3 data-i18n="top_items">売れ筋商品</h3>
+          <div class="ops-list" data-top-items></div>
+          <h3 data-i18n="payment_methods">支払い別売上</h3>
+          <div class="ops-list" data-payment-methods></div>
+        </aside>
+      </div>
+      <section class="card" style="margin-top:14px">
+        <div class="section-head">
+          <h2 data-i18n="staff_timeclock">スタッフ打刻</h2>
+          <span class="status preparing" data-on-duty-count>0</span>
+        </div>
+        <div class="table-admin-grid">
+          <form class="field-grid" data-staff-form>
+            <label class="field"><span data-i18n="id">ID</span><input name="id" required placeholder="staff-a"></label>
+            <label class="field"><span data-i18n="staff_name">スタッフ名</span><input name="name" required placeholder="佐藤"></label>
+            <label class="field"><span data-i18n="staff_role">役割</span><input name="role" value="hall"></label>
+            <label class="field"><span data-i18n="hourly_wage">時給</span><input name="hourlyWage" type="number" min="0" value="1100"></label>
+            <label style="align-self:end"><input name="active" type="checkbox" checked> <span data-i18n="enabled">有効</span></label>
+            <button class="btn primary full" type="submit" data-i18n="save_staff">スタッフ保存</button>
+          </form>
+          <div>
+            <form class="field-grid" data-schedule-form>
+              <label class="field full"><span data-i18n="staff_schedule">シフト</span><select name="staffId"></select></label>
+              <label class="field"><span data-i18n="schedule_date">日付</span><input name="date" type="date" required></label>
+              <label class="field"><span data-i18n="start_time">開始</span><input name="startTime" type="time" value="09:00" required></label>
+              <label class="field"><span data-i18n="end_time">終了</span><input name="endTime" type="time" value="17:00" required></label>
+              <label class="field"><span data-i18n="break_time">休憩</span><input name="breakMinutes" type="number" min="0" value="30"></label>
+              <button class="btn ghost full" type="submit" data-i18n="save_schedule">シフト保存</button>
+            </form>
+            <div class="labor-total">
+              <span data-i18n="worked_time">勤務時間</span><strong data-labor-worked>0:00</strong>
+              <span data-i18n="estimated_wage">概算人件費</span><strong class="price" data-labor-wage>¥0</strong>
+            </div>
+            <div class="ops-list" data-staff-list></div>
+          </div>
+        </div>
+      </section>
+      <section class="card" style="margin-top:14px">
+        <div class="section-head">
+          <h2 data-i18n="customer_management">顧客管理</h2>
+          <span class="status done" data-customer-count>0</span>
+        </div>
+        <div class="ops-list" data-customer-list></div>
+      </section>
       <section class="card" style="margin-top:14px">
         <h2 data-i18n="current_menu">現在のメニュー</h2>
         <div data-admin-menu></div>
       </section>
     </main>
   </div>
-  <script src="../assets/izakaya-core.js?v=20260530c"></script>
-  <script src="../assets/izakaya-i18n.js?v=20260530c"></script>
-  <script src="../assets/izakaya-ui.js?v=20260530c"></script>
+  <script src="../assets/izakaya-core.js?v=20260602f"></script>
+  <script src="../assets/izakaya-i18n.js?v=20260602f"></script>
+  <script src="../assets/izakaya-ui.js?v=20260602f"></script>
 </body>
 </html>
