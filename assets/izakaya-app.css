@@ -140,6 +140,19 @@ button, input, select, textarea {
   padding: 34px 0 96px;
 }
 
+.demo-notice {
+  width: min(1180px, calc(100% - 36px));
+  margin: 18px auto 0;
+  padding: 12px 16px;
+  border: 1px solid rgba(15, 107, 87, 0.18);
+  border-radius: 8px;
+  background: #F4FBF8;
+  color: var(--teal-dark);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
 .page-head {
   display: flex;
   align-items: flex-end;

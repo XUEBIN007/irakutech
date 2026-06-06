@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://xuebin007.github.io/irakutech/sitemap.xml
