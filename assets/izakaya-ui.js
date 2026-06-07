@@ -547,8 +547,13 @@
       `).join('') : `<div class="empty small">${t('outside_checkout_empty')}</div>`;
       document.querySelector('[data-checkout-total]').textContent = yen(activeCheckoutTotal());
       const hint = document.querySelector('[data-active-payment-hint]');
-      if (hint) hint.textContent = selectedOutsideOrderId ? t('checkout_hint_outside') : t('checkout_hint_table');
-      document.querySelector('[data-pay]').disabled = activeCheckoutTotal() === 0;
+      const currentTotal = activeCheckoutTotal();
+      if (hint) {
+        hint.textContent = currentTotal === 0
+          ? t('checkout_no_due')
+          : selectedOutsideOrderId ? t('checkout_hint_outside') : t('checkout_hint_table');
+      }
+      document.querySelector('[data-pay]').disabled = currentTotal === 0;
       document.querySelector('[data-payment-total]').textContent = yen(payments.total);
       document.querySelector('[data-payment-history]').innerHTML = payments.records.length ? payments.records.map((record) => `
         <div class="payment-line">
@@ -594,6 +599,11 @@
       if (pay) {
         const method = document.querySelector('[data-payment-method]').value;
         const totalDue = activeCheckoutTotal();
+        if (totalDue === 0) {
+          notify(t('checkout_no_due'));
+          render();
+          return;
+        }
         const receivedInput = document.querySelector('[data-received-amount]');
         const receivedAmount = receivedInput.value === '' ? totalDue : Number(receivedInput.value);
         if (receivedAmount < totalDue) {
