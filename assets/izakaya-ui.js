@@ -92,6 +92,7 @@
   function mountOrder() {
     let selectedCategory = 'all';
     let isSubmitting = false;
+    let submitError = '';
     const tableId = getTableId();
 
     function render() {
@@ -136,7 +137,7 @@
         </article>
       `).join('');
 
-      document.querySelector('[data-cart]').innerHTML = cart.length ? cart.map((line) => {
+      const cartMarkup = cart.length ? cart.map((line) => {
         const item = store.menu.find((entry) => entry.id === line.menuItemId);
         return `
           <div class="cart-line">
@@ -155,6 +156,7 @@
           </div>
         `;
       }).join('') : `<div class="empty">${t('cart_empty')}</div>`;
+      document.querySelector('[data-cart]').innerHTML = `${submitError ? `<div class="empty small">${submitError}</div>` : ''}${cartMarkup}`;
       document.querySelector('[data-total]').textContent = yen(core.cartTotal(cart, store.menu));
       const submitButton = document.querySelector('[data-submit]');
       submitButton.disabled = isSubmitting;
@@ -183,17 +185,20 @@
       }
       const add = event.target.closest('[data-add]');
       if (add) {
+        submitError = '';
         core.addToCart(tableId, add.dataset.add);
         render();
       }
       const inc = event.target.closest('[data-inc]');
       if (inc) {
+        submitError = '';
         const line = core.loadCart(tableId).find((entry) => entry.menuItemId === inc.dataset.inc);
         core.updateCartLine(tableId, inc.dataset.inc, { quantity: line.quantity + 1 });
         render();
       }
       const dec = event.target.closest('[data-dec]');
       if (dec) {
+        submitError = '';
         const line = core.loadCart(tableId).find((entry) => entry.menuItemId === dec.dataset.dec);
         core.updateCartLine(tableId, dec.dataset.dec, { quantity: line.quantity - 1 });
         render();
@@ -211,13 +216,15 @@
         render();
         try {
           const order = core.createOrder({ tableId, cart });
+          submitError = '';
           notify(`${t('accepted')}: ${order.id}`);
           isSubmitting = false;
           render();
           pushCloudOrder(order).then(() => syncCloud(render));
         } catch (error) {
           isSubmitting = false;
-          notify(error.message || t('takeout_missing'));
+          submitError = error.message || t('takeout_missing');
+          notify(submitError);
           render();
         }
       }
@@ -341,6 +348,7 @@
     let fulfillmentMethod = 'pickup';
     let confirmedOrder = null;
     let isSubmitting = false;
+    let submitError = '';
 
     function deliveryFee() {
       return fulfillmentMethod === 'delivery' ? 300 : 0;
@@ -420,7 +428,7 @@
           <button class="btn primary" data-add="${item.id}" ${item.soldOut ? 'disabled' : ''}>${item.soldOut ? t('soldout') : t('add')}</button>
         </article>
       `).join('');
-      document.querySelector('[data-takeout-cart]').innerHTML = cart.length ? cart.map((line) => {
+      const cartMarkup = cart.length ? cart.map((line) => {
         const item = store.menu.find((entry) => entry.id === line.menuItemId);
         return `
           <div class="cart-line">
@@ -439,6 +447,7 @@
           </div>
         `;
       }).join('') : `<div class="empty">${t('cart_empty')}</div>`;
+      document.querySelector('[data-takeout-cart]').innerHTML = `${submitError ? `<div class="empty small">${submitError}</div>` : ''}${cartMarkup}`;
       const subtotal = core.cartTotal(cart, store.menu);
       document.querySelector('[data-subtotal]').textContent = yen(subtotal);
       document.querySelector('[data-delivery-fee]').textContent = yen(deliveryFee());
@@ -462,18 +471,21 @@
       }
       const add = event.target.closest('[data-add]');
       if (add) {
+        submitError = '';
         confirmedOrder = null;
         core.addToCart(cartId, add.dataset.add);
         render();
       }
       const inc = event.target.closest('[data-inc]');
       if (inc) {
+        submitError = '';
         const line = core.loadCart(cartId).find((entry) => entry.menuItemId === inc.dataset.inc);
         core.updateCartLine(cartId, inc.dataset.inc, { quantity: line.quantity + 1 });
         render();
       }
       const dec = event.target.closest('[data-dec]');
       if (dec) {
+        submitError = '';
         const line = core.loadCart(cartId).find((entry) => entry.menuItemId === dec.dataset.dec);
         core.updateCartLine(cartId, dec.dataset.dec, { quantity: line.quantity - 1 });
         render();
@@ -512,13 +524,15 @@
           });
           core.clearCart?.(cartId);
           confirmedOrder = order;
+          submitError = '';
           notify(`${t('accepted')}: ${order.id}`);
           isSubmitting = false;
           render();
           pushCloudOrder(order).then(() => syncCloud(render));
         } catch (error) {
           isSubmitting = false;
-          notify(error.message || t('takeout_missing'));
+          submitError = error.message || t('takeout_missing');
+          notify(submitError);
           render();
         }
       }

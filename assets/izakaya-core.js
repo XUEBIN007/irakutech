@@ -88,6 +88,26 @@
     return JSON.parse(JSON.stringify(value));
   }
 
+  function demoAutoRestockEnabled() {
+    return root.IzakayaCloudConfig?.demoAutoRestock === true;
+  }
+
+  function restoreDemoInventory(store) {
+    if (!demoAutoRestockEnabled()) return false;
+    let changed = false;
+    const seedStock = new Map(seed.inventory.map((entry) => [entry.menuItemId, entry.stock]));
+    store.inventory.forEach((entry) => {
+      const targetStock = seedStock.get(entry.menuItemId) ?? Math.max(entry.safetyStock * 3, 12);
+      const item = store.menu.find((menuItem) => menuItem.id === entry.menuItemId);
+      if (entry.stock <= entry.safetyStock || item?.soldOut) {
+        entry.stock = Math.max(entry.stock, targetStock);
+        if (item) item.soldOut = false;
+        changed = true;
+      }
+    });
+    return changed;
+  }
+
   function loadStore() {
     const raw = storage().getItem(STORE_KEY);
     if (!raw) {
@@ -97,7 +117,7 @@
     }
     try {
       const parsed = JSON.parse(raw);
-      return {
+      const normalized = {
         categories: parsed.categories || clone(seed.categories),
         menu: parsed.menu || clone(seed.menu),
         inventory: normalizeInventory(parsed.inventory, parsed.menu || seed.menu),
@@ -111,6 +131,8 @@
         customerNotes: (parsed.customerNotes || []).map(normalizeCustomerNote),
         orders: (parsed.orders || []).map(normalizeOrder)
       };
+      if (restoreDemoInventory(normalized)) saveStore(normalized);
+      return normalized;
     } catch (error) {
       const initial = clone(seed);
       saveStore(initial);

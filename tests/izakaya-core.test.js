@@ -220,6 +220,19 @@ assert.strictEqual(warningReport.readyToClose, false);
 
 localStorage.clear();
 core.loadStore();
+core.recordInventoryMovement('beer', { type: 'waste', quantity: 24, note: 'demo depletion' });
+assert.strictEqual(core.loadStore().menu.find((entry) => entry.id === 'beer').soldOut, true);
+globalThis.IzakayaCloudConfig = { demoAutoRestock: true };
+const demoRestockedStore = core.loadStore();
+assert.strictEqual(demoRestockedStore.menu.find((entry) => entry.id === 'beer').soldOut, false);
+assert.ok(demoRestockedStore.inventory.find((entry) => entry.menuItemId === 'beer').stock >= 24);
+core.addToCart('1', 'beer');
+const demoRestockOrder = core.createOrder({ tableId: '1', cart: core.loadCart('1') });
+assert.strictEqual(demoRestockOrder.lines[0].menuItemId, 'beer');
+delete globalThis.IzakayaCloudConfig;
+
+localStorage.clear();
+core.loadStore();
 core.upsertStaff({ id: 'sato', name: '佐藤', role: 'kitchen', active: true, hourlyWage: 1200 });
 core.upsertStaffSchedule({
   staffId: 'sato',
