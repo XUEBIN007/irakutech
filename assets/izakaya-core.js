@@ -48,6 +48,7 @@
     dailyCloses: [],
     tableEvents: [],
     customerNotes: [],
+    auditEvents: [],
     orders: []
   };
 
@@ -129,6 +130,7 @@
         dailyCloses: (parsed.dailyCloses || []).map(normalizeDailyClose),
         tableEvents: (parsed.tableEvents || []).map(normalizeTableEvent),
         customerNotes: (parsed.customerNotes || []).map(normalizeCustomerNote),
+        auditEvents: (parsed.auditEvents || []).map(normalizeAuditEvent),
         orders: (parsed.orders || []).map(normalizeOrder)
       };
       if (restoreDemoInventory(normalized)) saveStore(normalized);
@@ -188,6 +190,31 @@
       ...event
     });
     store.tableEvents.unshift(normalized);
+    return normalized;
+  }
+
+  function normalizeAuditEvent(event) {
+    return {
+      id: event.id || 'AUDIT-' + randomToken(),
+      createdAt: event.createdAt || new Date().toISOString(),
+      module: event.module || 'system',
+      action: event.action || 'update',
+      actor: event.actor || 'system',
+      target: event.target ? String(event.target) : '',
+      summary: event.summary || '',
+      amount: Number(event.amount || 0),
+      quantity: Number(event.quantity || 0),
+      meta: event.meta && typeof event.meta === 'object' ? event.meta : {}
+    };
+  }
+
+  function addAuditEvent(store, event) {
+    const normalized = normalizeAuditEvent({
+      id: 'AUDIT-' + Date.now() + '-' + randomToken().slice(0, 4),
+      createdAt: new Date().toISOString(),
+      ...event
+    });
+    store.auditEvents = [normalized, ...(store.auditEvents || [])].slice(0, 300);
     return normalized;
   }
 
@@ -383,6 +410,18 @@
     }, 0);
   }
 
+  function orderTypeTextForAudit(orderType) {
+    if (orderType === 'pickup') return 'Pickup';
+    if (orderType === 'delivery') return 'Delivery';
+    return 'Dine-in';
+  }
+
+  function orderLabelForAudit(order) {
+    if (order.orderType === 'pickup') return `Pickup ${order.customer?.name || order.id}`.trim();
+    if (order.orderType === 'delivery') return `Delivery ${order.customer?.name || order.id}`.trim();
+    return `Table ${order.tableId || '-'} ${order.id}`;
+  }
+
   function createOrder({ tableId = '', cart, orderType, customer, fulfillment, deliveryFee = 0 }) {
     const store = loadStore();
     if (!cart || cart.length === 0) throw new Error('Cart is empty');
@@ -440,6 +479,16 @@
     if (normalizedOrderType === 'dine-in' && tableId) {
       store.tables = store.tables.map((table) => table.id === String(tableId) ? { ...table, status: 'occupied', openedAt: table.openedAt || order.createdAt } : table);
     }
+    addAuditEvent(store, {
+      module: 'order',
+      action: 'create_order',
+      actor: normalizedOrderType === 'dine-in' ? '顾客' : '顾客',
+      target: order.id,
+      summary: `${orderTypeTextForAudit(normalizedOrderType)} ${order.tableId ? `Table ${order.tableId}` : order.customer.name || ''}`.trim(),
+      amount: order.total,
+      quantity: lines.reduce((sum, line) => sum + line.quantity, 0),
+      meta: { orderType: normalizedOrderType, tableId: order.tableId }
+    });
     saveStore(store);
     if (tableId) clearCart(tableId);
     return order;
@@ -447,7 +496,18 @@
 
   function updateOrderStatus(orderId, status) {
     const store = loadStore();
+    const order = store.orders.find((entry) => entry.id === orderId);
     store.orders = store.orders.map((order) => order.id === orderId ? { ...order, status } : order);
+    if (order) addAuditEvent(store, {
+      module: 'kitchen',
+      action: 'update_order_status',
+      actor: '厨房',
+      target: orderId,
+      summary: `${orderLabelForAudit(order)} -> ${status}`,
+      amount: order.total,
+      quantity: order.lines.reduce((sum, line) => sum + line.quantity, 0),
+      meta: { status }
+    });
     saveStore(store);
   }
 
@@ -495,6 +555,16 @@
       };
     });
     store.tables = store.tables.map((table) => table.id === String(tableId) ? { ...table, status: 'available', guestCount: 0, openedAt: '' } : table);
+    if (paidTotal > 0) addAuditEvent(store, {
+      module: 'checkout',
+      action: 'checkout_table',
+      actor: '会计',
+      target: tableId,
+      summary: `Table ${tableId} checkout`,
+      amount: paidTotal,
+      quantity: unpaidOrders.length,
+      meta: { method, receivedAmount, changeAmount }
+    });
     saveStore(store);
     return paidTotal;
   }
@@ -517,6 +587,16 @@
       changeAmount,
       paidAt: new Date().toISOString()
     } : entry);
+    addAuditEvent(store, {
+      module: 'checkout',
+      action: 'checkout_order',
+      actor: '会计',
+      target: orderId,
+      summary: `${orderLabelForAudit(order)} checkout`,
+      amount: order.total,
+      quantity: 1,
+      meta: { method, receivedAmount, changeAmount }
+    });
     saveStore(store);
     return order.total;
   }
@@ -601,6 +681,7 @@
       ...overview,
       salesTotal: paidOrders.reduce((sum, order) => sum + order.total, 0),
       cashExpected,
+      openTotal: openOrders.reduce((sum, order) => sum + order.total, 0),
       openOrderCount: openOrders.length,
       readyToClose: openOrders.length === 0,
       paymentMethods,
@@ -626,6 +707,15 @@
     const index = store.dailyCloses.findIndex((entry) => entry.date === date);
     if (index >= 0) store.dailyCloses[index] = normalized;
     else store.dailyCloses.unshift(normalized);
+    addAuditEvent(store, {
+      module: 'checkout',
+      action: 'close_business_day',
+      actor: '店长',
+      target: date,
+      summary: `Daily close ${date}`,
+      amount: normalized.salesTotal,
+      meta: { cashActual: normalized.cashActual, cashDifference: normalized.cashDifference }
+    });
     saveStore(store);
     return normalized;
   }
@@ -642,13 +732,35 @@
     const index = store.menu.findIndex((entry) => entry.id === normalized.id);
     if (index >= 0) store.menu[index] = normalized;
     else store.menu.push(normalized);
+    addAuditEvent(store, {
+      module: 'admin',
+      action: 'save_menu_item',
+      actor: '店长',
+      target: normalized.id,
+      summary: `${normalized.nameJa} / ${normalized.nameZh}`,
+      amount: normalized.price,
+      meta: { soldOut: normalized.soldOut }
+    });
     saveStore(store);
     return normalized;
   }
 
   function toggleSoldOut(menuItemId) {
     const store = loadStore();
-    store.menu = store.menu.map((item) => item.id === menuItemId ? { ...item, soldOut: !item.soldOut } : item);
+    let updated = null;
+    store.menu = store.menu.map((item) => {
+      if (item.id !== menuItemId) return item;
+      updated = { ...item, soldOut: !item.soldOut };
+      return updated;
+    });
+    if (updated) addAuditEvent(store, {
+      module: 'admin',
+      action: 'toggle_soldout',
+      actor: '店长',
+      target: menuItemId,
+      summary: `${updated.nameJa} ${updated.soldOut ? 'sold out' : 'selling'}`,
+      meta: { soldOut: updated.soldOut }
+    });
     saveStore(store);
   }
 
@@ -665,6 +777,15 @@
     if (existing) Object.assign(existing, normalized);
     else store.inventory.push(normalized);
     setMenuSoldOutByStock(store, menuItemId, normalized.stock);
+    addAuditEvent(store, {
+      module: 'inventory',
+      action: 'adjust_inventory',
+      actor: '店长',
+      target: menuItemId,
+      summary: `Stock ${menuItemId}: ${normalized.stock}`,
+      quantity: normalized.stock,
+      meta: { safetyStock: normalized.safetyStock }
+    });
     saveStore(store);
     return normalized;
   }
@@ -672,6 +793,15 @@
   function recordInventoryMovement(menuItemId, movement) {
     const store = loadStore();
     const entry = addInventoryMovement(store, menuItemId, movement);
+    addAuditEvent(store, {
+      module: 'inventory',
+      action: 'inventory_movement',
+      actor: '店长',
+      target: menuItemId,
+      summary: `${entry.type} ${menuItemId}`,
+      quantity: Math.abs(entry.quantity),
+      meta: { type: entry.type, stockAfter: entry.stockAfter, note: entry.note }
+    });
     saveStore(store);
     return entry;
   }
@@ -707,6 +837,15 @@
     const index = store.staff.findIndex((entry) => entry.id === normalized.id);
     if (index >= 0) store.staff[index] = normalized;
     else store.staff.push(normalized);
+    addAuditEvent(store, {
+      module: 'staff',
+      action: 'save_staff',
+      actor: '店长',
+      target: normalized.id,
+      summary: `${normalized.name} / ${normalized.role}`,
+      amount: normalized.hourlyWage,
+      meta: { active: normalized.active }
+    });
     saveStore(store);
     return normalized;
   }
@@ -721,6 +860,15 @@
     const index = store.staffSchedules.findIndex((entry) => entry.id === normalized.id);
     if (index >= 0) store.staffSchedules[index] = normalized;
     else store.staffSchedules.push(normalized);
+    addAuditEvent(store, {
+      module: 'staff',
+      action: 'save_schedule',
+      actor: '店长',
+      target: normalized.staffId,
+      summary: `${normalized.date} ${normalized.startTime}-${normalized.endTime}`,
+      quantity: scheduleMinutes(normalized),
+      meta: { date: normalized.date }
+    });
     saveStore(store);
     return normalized;
   }
@@ -767,6 +915,14 @@
       status: 'working'
     });
     store.timeEntries.unshift(entry);
+    addAuditEvent(store, {
+      module: 'staff',
+      action: 'clock_in',
+      actor: '店长',
+      target: staffId,
+      summary: `${staffId} clock in`,
+      meta: { clockIn: entry.clockIn }
+    });
     saveStore(store);
     return entry;
   }
@@ -777,6 +933,14 @@
     if (!entry || entry.status !== 'working') throw new Error('Staff is not working');
     entry.breakStartedAt = new Date(now).toISOString();
     entry.status = 'break';
+    addAuditEvent(store, {
+      module: 'staff',
+      action: 'start_break',
+      actor: '店长',
+      target: staffId,
+      summary: `${staffId} start break`,
+      meta: { breakStartedAt: entry.breakStartedAt }
+    });
     saveStore(store);
     return entry;
   }
@@ -789,6 +953,14 @@
     entry.breakMinutes += Math.max(0, Math.round((new Date(now).getTime() - started) / 60000));
     entry.breakStartedAt = '';
     entry.status = 'working';
+    addAuditEvent(store, {
+      module: 'staff',
+      action: 'end_break',
+      actor: '店长',
+      target: staffId,
+      summary: `${staffId} end break`,
+      quantity: entry.breakMinutes
+    });
     saveStore(store);
     return entry;
   }
@@ -811,6 +983,15 @@
     }
     entry.clockOut = new Date(now).toISOString();
     entry.status = 'done';
+    addAuditEvent(store, {
+      module: 'staff',
+      action: 'clock_out',
+      actor: '店长',
+      target: staffId,
+      summary: `${staffId} clock out`,
+      quantity: workedMinutes(entry, now),
+      meta: { clockOut: entry.clockOut }
+    });
     saveStore(store);
     return entry;
   }
@@ -885,19 +1066,48 @@
     if (index >= 0) store.tables[index] = normalized;
     else store.tables.push(normalized);
     store.tables.sort((a, b) => Number(a.id) - Number(b.id) || a.id.localeCompare(b.id));
+    addAuditEvent(store, {
+      module: 'table',
+      action: 'save_table',
+      actor: '店长',
+      target: normalized.id,
+      summary: `${normalized.area}-${normalized.id}`,
+      quantity: normalized.seats,
+      meta: { enabled: normalized.enabled }
+    });
     saveStore(store);
     return normalized;
   }
 
   function toggleTableEnabled(tableId) {
     const store = loadStore();
-    store.tables = store.tables.map((table) => table.id === String(tableId) ? { ...table, enabled: !table.enabled } : table);
+    let updated = null;
+    store.tables = store.tables.map((table) => {
+      if (table.id !== String(tableId)) return table;
+      updated = { ...table, enabled: !table.enabled };
+      return updated;
+    });
+    if (updated) addAuditEvent(store, {
+      module: 'table',
+      action: 'toggle_table',
+      actor: '店长',
+      target: tableId,
+      summary: `${updated.area}-${updated.id} ${updated.enabled ? 'enabled' : 'disabled'}`,
+      meta: { enabled: updated.enabled }
+    });
     saveStore(store);
   }
 
   function regenerateTableToken(tableId) {
     const store = loadStore();
     store.tables = store.tables.map((table) => table.id === String(tableId) ? { ...table, token: randomToken() } : table);
+    addAuditEvent(store, {
+      module: 'table',
+      action: 'regenerate_table_token',
+      actor: '店长',
+      target: tableId,
+      summary: `Regenerate QR token for table ${tableId}`
+    });
     saveStore(store);
   }
 
@@ -933,6 +1143,15 @@
       note: details.note ?? table.note ?? ''
     } : table);
     addTableEvent(store, { type: 'open', tableId, guestCount: Number(details.guestCount || 0), note: details.note || '' });
+    addAuditEvent(store, {
+      module: 'table',
+      action: 'open_table',
+      actor: '会计',
+      target: tableId,
+      summary: `Open table ${tableId}`,
+      quantity: Number(details.guestCount || 0),
+      meta: { note: details.note || '' }
+    });
     saveStore(store);
   }
 
@@ -961,6 +1180,14 @@
       return table;
     });
     addTableEvent(store, { type: 'transfer', fromTableId, toTableId, note: details.note || '' });
+    addAuditEvent(store, {
+      module: 'table',
+      action: 'transfer_table',
+      actor: '会计',
+      target: `${fromTableId}->${toTableId}`,
+      summary: `Transfer table ${fromTableId} to ${toTableId}`,
+      meta: { fromTableId, toTableId, note: details.note || '' }
+    });
     saveStore(store);
   }
 
@@ -985,6 +1212,14 @@
       return table;
     });
     addTableEvent(store, { type: 'merge', fromTableId, toTableId, note: details.note || '' });
+    addAuditEvent(store, {
+      module: 'table',
+      action: 'merge_table',
+      actor: '会计',
+      target: `${fromTableId}->${toTableId}`,
+      summary: `Merge table ${fromTableId} into ${toTableId}`,
+      meta: { fromTableId, toTableId, note: details.note || '' }
+    });
     saveStore(store);
   }
 
@@ -993,6 +1228,14 @@
     requireTable(store, tableId);
     store.tables = store.tables.map((table) => table.id === String(tableId) ? resetTableState(table, details.note || '') : table);
     addTableEvent(store, { type: 'clear', tableId, note: details.note || '' });
+    addAuditEvent(store, {
+      module: 'table',
+      action: 'clear_table',
+      actor: '会计',
+      target: tableId,
+      summary: `Clear table ${tableId}`,
+      meta: { note: details.note || '' }
+    });
     saveStore(store);
   }
 
@@ -1046,16 +1289,41 @@
     const index = store.customerNotes.findIndex((entry) => entry.phone === normalizedPhone);
     if (index >= 0) store.customerNotes[index] = normalized;
     else store.customerNotes.push(normalized);
+    addAuditEvent(store, {
+      module: 'customer',
+      action: 'update_customer_note',
+      actor: '店长',
+      target: normalizedPhone,
+      summary: `Customer note ${normalizedPhone}`,
+      meta: { note: normalized.note }
+    });
     saveStore(store);
     return normalized;
   }
 
   function resetDemo() {
-    saveStore(clone(seed));
+    const previous = loadStore();
+    const next = clone(seed);
+    next.auditEvents = previous.auditEvents || [];
+    addAuditEvent(next, {
+      module: 'system',
+      action: 'reset_demo',
+      actor: '店长',
+      target: 'demo',
+      summary: 'Reset demo data'
+    });
+    saveStore(next);
     const keys = storage().keys ? storage().keys() : Object.keys(storage());
     keys.forEach?.((key) => {
       if (key.startsWith(CART_PREFIX)) storage().removeItem(key);
     });
+  }
+
+  function auditEvents(limit = 100) {
+    return loadStore().auditEvents
+      .slice()
+      .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+      .slice(0, Number(limit || 100));
   }
 
   const api = {
@@ -1105,6 +1373,7 @@
     endBreak,
     clockOut,
     laborSummary,
+    auditEvents,
     resetDemo
   };
 

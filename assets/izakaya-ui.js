@@ -795,6 +795,7 @@
       const report = core.dailyReport();
       const labor = core.laborSummary();
       const customers = core.customerProfiles();
+      const auditEvents = core.auditEvents ? core.auditEvents(20) : [];
       const inventoryItems = inventoryFilter === 'low' ? inventory.lowStock : inventory.items;
       document.querySelector('[data-admin-menu]').innerHTML = store.menu.map((item) => `
         <div class="admin-line">
@@ -893,6 +894,17 @@
           </form>
         </div>
       `).join('') : `<div class="empty small">${t('payment_history_empty')}</div>`;
+      document.querySelector('[data-audit-count]').textContent = auditEvents.length;
+      document.querySelector('[data-audit-log]').innerHTML = auditEvents.length ? auditEvents.map((entry) => `
+        <div class="table-line">
+          <div>
+            <strong>${entry.actor} · ${entry.module}</strong>
+            <div class="muted">${entry.summary || entry.action}</div>
+            <div class="muted">${entry.target || '-'}${entry.amount ? ` · ${yen(entry.amount)}` : ''}${entry.quantity ? ` · ${entry.quantity}` : ''}</div>
+          </div>
+          <span class="muted">${new Date(entry.createdAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+      `).join('') : `<div class="empty small">${t('audit_empty')}</div>`;
       document.querySelector('[data-table-qr]').innerHTML = store.tables.map((table) => {
         const url = tableUrl(table);
         return `
