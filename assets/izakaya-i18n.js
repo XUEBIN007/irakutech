@@ -9,7 +9,7 @@
     ja: {
       nav_order: '注文', nav_takeout: 'テイクアウト', nav_kitchen: '厨房', nav_checkout: '会計', nav_admin: '管理',
       order_eyebrow: 'Customer Ordering', order_title: 'テーブル {table}', order_desc: 'メニューを選んで、そのまま厨房へ送信できます。', order_to_kitchen: '厨房で確認 →',
-      cart_title: '現在の注文', cart_empty: 'まだ注文がありません。メニューから追加してください。', add_items_first: '先にメニューを追加してください', order_submit: '注文を送信', note_placeholder: '備考 / 例: 氷少なめ、ねぎ抜き',
+      cart_title: '現在の注文', cart_empty: 'まだ注文がありません。メニューから追加してください。', add_items_first: '先にメニューを追加してください', order_submit: '注文を送信', order_submitting: '送信中...', note_placeholder: '備考 / 例: 氷少なめ、ねぎ抜き',
       add: '追加', soldout: '売切れ', total: '合計', accepted: '注文を受け付けました', all: 'すべて', recommended: 'おすすめ', note: '備考',
       ordered_title: '注文済み', ordered_empty: 'まだ注文済みの商品はありません。追加注文するとここに表示されます。', current_due: '現在のご利用額', open_order_count: '{count}件',
       order_type_dine_in: '店内', order_type_pickup: 'テイクアウト', order_type_delivery: 'デリバリー', requested_time: '希望時間',
@@ -40,7 +40,7 @@
     zh: {
       nav_order: '点菜', nav_takeout: '外卖自取', nav_kitchen: '厨房', nav_checkout: '结账', nav_admin: '管理',
       order_eyebrow: '顾客点菜', order_title: '桌号 {table}', order_desc: '选择菜品后，可直接发送到厨房。', order_to_kitchen: '去厨房确认 →',
-      cart_title: '当前订单', cart_empty: '还没有点菜，请从菜单中添加。', add_items_first: '请先添加菜品', order_submit: '提交订单', note_placeholder: '备注 / 例: 少冰、不要葱',
+      cart_title: '当前订单', cart_empty: '还没有点菜，请从菜单中添加。', add_items_first: '请先添加菜品', order_submit: '提交订单', order_submitting: '提交中...', note_placeholder: '备注 / 例: 少冰、不要葱',
       add: '添加', soldout: '售罄', total: '合计', accepted: '订单已提交', all: '全部', recommended: '推荐', note: '备注',
       ordered_title: '已点订单', ordered_empty: '还没有已提交的菜品。追加点单后会显示在这里。', current_due: '当前消费金额', open_order_count: '{count}单',
       order_type_dine_in: '堂食', order_type_pickup: '到店自取', order_type_delivery: '店铺配送', requested_time: '希望时间',
@@ -71,7 +71,7 @@
     en: {
       nav_order: 'Order', nav_takeout: 'Takeout', nav_kitchen: 'Kitchen', nav_checkout: 'Checkout', nav_admin: 'Admin',
       order_eyebrow: 'Customer Ordering', order_title: 'Table {table}', order_desc: 'Choose menu items and send the order directly to the kitchen.', order_to_kitchen: 'Check in kitchen →',
-      cart_title: 'Current Order', cart_empty: 'No items yet. Add dishes from the menu.', add_items_first: 'Add menu items first', order_submit: 'Send Order', note_placeholder: 'Note / e.g. less ice, no scallion',
+      cart_title: 'Current Order', cart_empty: 'No items yet. Add dishes from the menu.', add_items_first: 'Add menu items first', order_submit: 'Send Order', order_submitting: 'Sending...', note_placeholder: 'Note / e.g. less ice, no scallion',
       add: 'Add', soldout: 'Sold Out', total: 'Total', accepted: 'Order received', all: 'All', recommended: 'Recommended', note: 'Note',
       ordered_title: 'Ordered Items', ordered_empty: 'No submitted items yet. Additional orders will appear here.', current_due: 'Current Due', open_order_count: '{count} orders',
       order_type_dine_in: 'Dine-in', order_type_pickup: 'Pickup', order_type_delivery: 'Delivery', requested_time: 'Requested Time',

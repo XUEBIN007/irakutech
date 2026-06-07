@@ -91,6 +91,7 @@
 
   function mountOrder() {
     let selectedCategory = 'all';
+    let isSubmitting = false;
     const tableId = getTableId();
 
     function render() {
@@ -156,8 +157,8 @@
       }).join('') : `<div class="empty">${t('cart_empty')}</div>`;
       document.querySelector('[data-total]').textContent = yen(core.cartTotal(cart, store.menu));
       const submitButton = document.querySelector('[data-submit]');
-      submitButton.disabled = false;
-      submitButton.textContent = cart.length ? t('order_submit') : t('add_items_first');
+      submitButton.disabled = isSubmitting;
+      submitButton.textContent = isSubmitting ? t('order_submitting') : cart.length ? t('order_submit') : t('add_items_first');
       submitButton.title = cart.length ? t('order_submit') : t('cart_empty');
       const summary = core.tableOpenSummary(tableId);
       document.querySelector('[data-order-count]').textContent = t('open_order_count', { count: summary.orders.length });
@@ -199,17 +200,26 @@
       }
       const submit = event.target.closest('[data-submit]');
       if (submit) {
+        if (isSubmitting) return;
         const cart = core.loadCart(tableId);
         if (!cart.length) {
           notify(t('add_items_first'));
           render();
           return;
         }
-        const order = core.createOrder({ tableId, cart });
-        await pushCloudOrder(order);
-        await syncCloud();
-        notify(`${t('accepted')}: ${order.id}`);
+        isSubmitting = true;
         render();
+        try {
+          const order = core.createOrder({ tableId, cart });
+          notify(`${t('accepted')}: ${order.id}`);
+          isSubmitting = false;
+          render();
+          pushCloudOrder(order).then(() => syncCloud(render));
+        } catch (error) {
+          isSubmitting = false;
+          notify(error.message || t('takeout_missing'));
+          render();
+        }
       }
     });
 
@@ -330,6 +340,7 @@
     let selectedCategory = 'all';
     let fulfillmentMethod = 'pickup';
     let confirmedOrder = null;
+    let isSubmitting = false;
 
     function deliveryFee() {
       return fulfillmentMethod === 'delivery' ? 300 : 0;
@@ -433,8 +444,8 @@
       document.querySelector('[data-delivery-fee]').textContent = yen(deliveryFee());
       document.querySelector('[data-total]').textContent = yen(subtotal + deliveryFee());
       const takeoutSubmit = document.querySelector('[data-submit-takeout]');
-      takeoutSubmit.disabled = false;
-      takeoutSubmit.textContent = cart.length ? t('takeout_submit') : t('add_items_first');
+      takeoutSubmit.disabled = isSubmitting;
+      takeoutSubmit.textContent = isSubmitting ? t('order_submitting') : cart.length ? t('takeout_submit') : t('add_items_first');
       takeoutSubmit.title = cart.length ? t('takeout_submit') : t('cart_empty');
     }
 
@@ -469,6 +480,7 @@
       }
       const submit = event.target.closest('[data-submit-takeout]');
       if (submit) {
+        if (isSubmitting) return;
         const cart = core.loadCart(cartId);
         if (!cart.length) {
           notify(t('add_items_first'));
@@ -483,24 +495,32 @@
           notify(t('takeout_missing'));
           return;
         }
-        const order = core.createOrder({
-          orderType: fulfillmentMethod,
-          cart,
-          customer: { name, phone },
-          fulfillment: {
-            method: fulfillmentMethod,
-            requestedAt,
-            address,
-            note: document.querySelector('[data-fulfillment-note]').value.trim()
-          },
-          deliveryFee: deliveryFee()
-        });
-        await pushCloudOrder(order);
-        await syncCloud();
-        core.clearCart?.(cartId);
-        confirmedOrder = order;
-        notify(`${t('accepted')}: ${order.id}`);
+        isSubmitting = true;
         render();
+        try {
+          const order = core.createOrder({
+            orderType: fulfillmentMethod,
+            cart,
+            customer: { name, phone },
+            fulfillment: {
+              method: fulfillmentMethod,
+              requestedAt,
+              address,
+              note: document.querySelector('[data-fulfillment-note]').value.trim()
+            },
+            deliveryFee: deliveryFee()
+          });
+          core.clearCart?.(cartId);
+          confirmedOrder = order;
+          notify(`${t('accepted')}: ${order.id}`);
+          isSubmitting = false;
+          render();
+          pushCloudOrder(order).then(() => syncCloud(render));
+        } catch (error) {
+          isSubmitting = false;
+          notify(error.message || t('takeout_missing'));
+          render();
+        }
       }
       const continueTakeout = event.target.closest('[data-continue-takeout]');
       if (continueTakeout) {
