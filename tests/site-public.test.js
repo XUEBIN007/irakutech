@@ -52,10 +52,11 @@ assert.match(terms, /利用規約/);
   const page = read(file);
   assert.match(page, /class="demo-notice"/, file);
   assert.match(page, /data-i18n="demo_notice"/, file);
-  assert.match(page, /assets\/izakaya-config\.js\?v=20260608a/, file);
-  assert.match(page, /assets\/izakaya-cloud\.js\?v=20260608a/, file);
+  assert.match(page, /assets\/izakaya-config\.js\?v=20260608b/, file);
+  assert.match(page, /assets\/izakaya-cloud\.js\?v=20260608b/, file);
 });
 assert.match(read('admin/index.html'), /data-audit-log/);
+assert.match(read('admin/index.html'), /data-manager-alerts/);
 
 const checklist = read('docs/public-launch-checklist.md');
 assert.match(checklist, /公開前チェックリスト/);

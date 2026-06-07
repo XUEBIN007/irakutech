@@ -796,7 +796,21 @@
       const labor = core.laborSummary();
       const customers = core.customerProfiles();
       const auditEvents = core.auditEvents ? core.auditEvents(20) : [];
+      const managerAlerts = core.managerAlerts ? core.managerAlerts() : [];
       const inventoryItems = inventoryFilter === 'low' ? inventory.lowStock : inventory.items;
+      document.querySelector('[data-manager-alert-count]').textContent = managerAlerts.length;
+      document.querySelector('[data-manager-alerts]').innerHTML = managerAlerts.length ? managerAlerts.map((alert) => `
+        <div class="admin-line ${alert.severity === 'danger' ? 'attention-line' : ''}">
+          <div>
+            <strong>${t(`alert_${alert.type}`)}</strong>
+            <div class="muted">${alert.summary}</div>
+          </div>
+          <div class="btn-row">
+            ${alert.amount ? `<span class="price">${yen(alert.amount)}</span>` : ''}
+            ${alert.quantity ? `<span class="status ${alert.severity === 'danger' ? 'new' : alert.severity === 'warning' ? 'preparing' : 'done'}">${alert.quantity}</span>` : ''}
+          </div>
+        </div>
+      `).join('') : `<div class="empty small">${t('manager_alerts_empty')}</div>`;
       document.querySelector('[data-admin-menu]').innerHTML = store.menu.map((item) => `
         <div class="admin-line">
           <div>

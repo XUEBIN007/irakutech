@@ -726,6 +726,48 @@
       .sort((a, b) => String(b.closedAt).localeCompare(String(a.closedAt)));
   }
 
+  function managerAlerts(now = new Date()) {
+    const store = loadStore();
+    const report = dailyReport(now);
+    const inventory = inventoryStatus();
+    const labor = laborSummary(now);
+    const latestClose = dailyCloseHistory()[0];
+    const unpaidOrders = store.orders.filter((order) => order.paymentStatus !== 'paid');
+    const unpaidTotal = unpaidOrders.reduce((sum, order) => sum + order.total, 0);
+    const alerts = [];
+    if (unpaidOrders.length > 0) alerts.push({
+      type: 'unpaid_orders',
+      severity: 'danger',
+      module: 'checkout',
+      summary: `${unpaidOrders.length} unpaid orders`,
+      amount: unpaidTotal,
+      quantity: unpaidOrders.length
+    });
+    if (inventory.lowStock.length > 0) alerts.push({
+      type: 'low_stock',
+      severity: 'warning',
+      module: 'inventory',
+      summary: `${inventory.lowStock.length} low stock items`,
+      quantity: inventory.lowStock.length
+    });
+    if (latestClose && latestClose.cashDifference !== 0) alerts.push({
+      type: 'cash_difference',
+      severity: latestClose.cashDifference < 0 ? 'danger' : 'warning',
+      module: 'checkout',
+      summary: `Cash difference ${latestClose.date}`,
+      amount: Math.abs(latestClose.cashDifference),
+      quantity: 1
+    });
+    if (labor.onDuty.length > 0) alerts.push({
+      type: 'staff_on_duty',
+      severity: 'info',
+      module: 'staff',
+      summary: `${labor.onDuty.length} staff on duty`,
+      quantity: labor.onDuty.length
+    });
+    return alerts;
+  }
+
   function upsertMenuItem(item) {
     const store = loadStore();
     const normalized = { ...item, price: Number(item.price), soldOut: Boolean(item.soldOut), recommended: Boolean(item.recommended) };
@@ -1348,6 +1390,7 @@
     dailyReport,
     closeBusinessDay,
     dailyCloseHistory,
+    managerAlerts,
     upsertMenuItem,
     toggleSoldOut,
     adjustInventory,

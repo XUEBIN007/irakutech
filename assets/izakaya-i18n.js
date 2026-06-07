@@ -36,6 +36,7 @@
       ,staff_schedule: 'シフト', schedule_date: '日付', start_time: '開始', end_time: '終了', hourly_wage: '時給', save_schedule: 'シフト保存', late: '遅刻', early_leave: '早退', estimated_wage: '概算人件費', scheduled_time: '予定時間', schedule_saved: 'シフトを保存しました'
       ,invalid_table: 'このQRコードは現在利用できません。スタッフにお声がけください。'
       ,audit_log: '操作ログ', audit_empty: '操作履歴はまだありません。'
+      ,manager_alerts: '店長アラート', manager_alerts_empty: '確認が必要な項目はありません。', alert_unpaid_orders: '未会計があります', alert_low_stock: '低在庫があります', alert_cash_difference: '現金差額があります', alert_staff_on_duty: '勤務中スタッフ'
       ,demo_notice: '公開 demo です。入力データはブラウザ内に保存されます。実在する個人情報・決済情報は入力しないでください。'
     },
     zh: {
@@ -68,6 +69,7 @@
       ,staff_schedule: '排班', schedule_date: '日期', start_time: '开始', end_time: '结束', hourly_wage: '时薪', save_schedule: '保存排班', late: '迟到', early_leave: '早退', estimated_wage: '预估人工费', scheduled_time: '计划时间', schedule_saved: '排班已保存'
       ,invalid_table: '这个二维码当前不可使用，请联系店员。'
       ,audit_log: '操作日志', audit_empty: '暂无操作记录。'
+      ,manager_alerts: '老板提醒', manager_alerts_empty: '暂无需要处理的事项。', alert_unpaid_orders: '还有未结账订单', alert_low_stock: '存在低库存商品', alert_cash_difference: '存在现金差额', alert_staff_on_duty: '员工仍在岗'
       ,demo_notice: '这是公开 demo，输入数据会保存在当前浏览器中。请不要填写真实个人信息或支付信息。'
     },
     en: {
@@ -100,6 +102,7 @@
       ,staff_schedule: 'Schedule', schedule_date: 'Date', start_time: 'Start', end_time: 'End', hourly_wage: 'Hourly Wage', save_schedule: 'Save Schedule', late: 'Late', early_leave: 'Early Leave', estimated_wage: 'Estimated Labor', scheduled_time: 'Scheduled', schedule_saved: 'Schedule saved'
       ,invalid_table: 'This QR code is not available. Please ask the staff.'
       ,audit_log: 'Audit Log', audit_empty: 'No operations yet.'
+      ,manager_alerts: 'Manager Alerts', manager_alerts_empty: 'No items need attention.', alert_unpaid_orders: 'Unpaid orders remain', alert_low_stock: 'Low stock items', alert_cash_difference: 'Cash difference exists', alert_staff_on_duty: 'Staff still on duty'
       ,demo_notice: 'Public demo. Data is stored in this browser. Do not enter real personal, confidential, or payment information.'
     }
   };

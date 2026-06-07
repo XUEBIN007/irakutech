@@ -351,4 +351,19 @@ assert.ok(auditEvents.some((event) => event.module === 'customer' && event.actio
 assert.ok(auditEvents.some((event) => event.module === 'checkout' && event.action === 'close_business_day'));
 assert.deepStrictEqual(auditEvents.map((event) => event.createdAt), [...auditEvents.map((event) => event.createdAt)].sort().reverse());
 
+localStorage.clear();
+core.loadStore();
+core.adjustInventory('beer', { stock: 2, safetyStock: 5 });
+core.addToCart('3', 'beer');
+core.createOrder({ tableId: '3', cart: core.loadCart('3') });
+core.upsertStaff({ id: 'alert-staff', name: '提醒スタッフ', role: 'hall', active: true, hourlyWage: 1000 });
+core.clockIn('alert-staff', new Date('2026-06-08T10:00:00+09:00'));
+core.closeBusinessDay({ date: '2026-06-08', cashActual: 10, note: 'cash short' });
+const managerAlerts = core.managerAlerts(new Date('2026-06-08T12:00:00+09:00'));
+assert.deepStrictEqual(managerAlerts.map((entry) => entry.type), ['unpaid_orders', 'low_stock', 'cash_difference', 'staff_on_duty']);
+assert.strictEqual(managerAlerts.find((entry) => entry.type === 'unpaid_orders').amount, 480);
+assert.strictEqual(managerAlerts.find((entry) => entry.type === 'low_stock').quantity, 1);
+assert.strictEqual(managerAlerts.find((entry) => entry.type === 'cash_difference').amount, 10);
+assert.strictEqual(managerAlerts.find((entry) => entry.type === 'staff_on_duty').quantity, 1);
+
 console.log('izakaya core tests passed');
