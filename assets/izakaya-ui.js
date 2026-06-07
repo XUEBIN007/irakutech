@@ -1,6 +1,7 @@
 (function () {
   const core = window.IzakayaCore;
   const i18n = window.IzakayaI18n;
+  const cloud = window.IzakayaCloud;
   const view = document.body.dataset.view;
   const yen = (value) => '¥' + Number(value || 0).toLocaleString('ja-JP');
   const t = (key, params) => i18n ? i18n.t(key, params) : key;
@@ -26,6 +27,26 @@
     toast.textContent = message;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 2400);
+  }
+
+  async function syncCloud(render) {
+    if (!cloud?.configured?.()) return;
+    try {
+      await cloud.syncIntoCore(core);
+      render?.();
+    } catch (error) {
+      console.warn('Cloud sync failed', error);
+    }
+  }
+
+  async function pushCloudOrder(order) {
+    if (!cloud?.configured?.()) return;
+    try {
+      await cloud.createOrder(order);
+    } catch (error) {
+      console.warn('Cloud order upload failed', error);
+      notify('Cloud sync error');
+    }
   }
 
   function itemName(item) {
@@ -153,7 +174,7 @@
       document.querySelector('[data-open-total]').textContent = yen(summary.total);
     }
 
-    document.addEventListener('click', (event) => {
+    document.addEventListener('click', async (event) => {
       const category = event.target.closest('[data-category]');
       if (category) {
         selectedCategory = category.dataset.category;
@@ -185,6 +206,8 @@
           return;
         }
         const order = core.createOrder({ tableId, cart });
+        await pushCloudOrder(order);
+        await syncCloud();
         notify(`${t('accepted')}: ${order.id}`);
         render();
       }
@@ -196,6 +219,7 @@
     });
     window.addEventListener('storage', render);
     window.addEventListener('irakutech:lang', render);
+    cloud?.startPolling?.(core, render);
     render();
   }
 
@@ -278,16 +302,26 @@
         .map((status) => kitchenColumn(status, groups[status]))
         .join('');
     }
-    document.addEventListener('click', (event) => {
+    document.addEventListener('click', async (event) => {
       const action = event.target.closest('[data-status]');
       if (!action) return;
       const [orderId, status] = action.dataset.status.split(':');
       core.updateOrderStatus(orderId, status);
+      if (cloud?.configured?.()) {
+        try {
+          await cloud.updateOrderStatus(orderId, status);
+          await syncCloud();
+        } catch (error) {
+          console.warn('Cloud status update failed', error);
+          notify('Cloud sync error');
+        }
+      }
       notify(status === 'done' ? t('set_done') : t('set_preparing'));
       render();
     });
     window.addEventListener('storage', render);
     window.addEventListener('irakutech:lang', render);
+    cloud?.startPolling?.(core, render);
     render();
   }
 
@@ -404,7 +438,7 @@
       takeoutSubmit.title = cart.length ? t('takeout_submit') : t('cart_empty');
     }
 
-    document.addEventListener('click', (event) => {
+    document.addEventListener('click', async (event) => {
       const fulfillment = event.target.closest('[data-fulfillment]');
       if (fulfillment) {
         fulfillmentMethod = fulfillment.dataset.fulfillment;
@@ -461,6 +495,8 @@
           },
           deliveryFee: deliveryFee()
         });
+        await pushCloudOrder(order);
+        await syncCloud();
         core.clearCart?.(cartId);
         confirmedOrder = order;
         notify(`${t('accepted')}: ${order.id}`);
@@ -479,6 +515,7 @@
     });
     window.addEventListener('storage', render);
     window.addEventListener('irakutech:lang', render);
+    cloud?.startPolling?.(core, render);
     render();
   }
 
@@ -606,7 +643,7 @@
       renderCloseDifference(report);
       renderChange();
     }
-    document.addEventListener('click', (event) => {
+    document.addEventListener('click', async (event) => {
       const table = event.target.closest('[data-table]');
       if (table) {
         selectedTable = table.dataset.table;
@@ -634,9 +671,27 @@
           renderChange();
           return;
         }
+        const storeBeforePayment = core.loadStore();
+        const ordersToPay = selectedOutsideOrderId
+          ? storeBeforePayment.orders.filter((entry) => entry.id === selectedOutsideOrderId && entry.paymentStatus !== 'paid')
+          : storeBeforePayment.orders.filter((order) => order.tableId === selectedTable && order.paymentStatus !== 'paid');
+        const orderIdsToPay = ordersToPay.map((order) => order.id);
         const total = selectedOutsideOrderId
           ? core.checkoutOrder(selectedOutsideOrderId, { method, receivedAmount })
           : core.checkoutTable(selectedTable, { method, receivedAmount });
+        if (cloud?.configured?.() && orderIdsToPay.length) {
+          try {
+            await cloud.checkoutOrders(orderIdsToPay, {
+              method,
+              receivedAmount,
+              changeAmount: Math.max(receivedAmount - totalDue, 0)
+            });
+            await syncCloud();
+          } catch (error) {
+            console.warn('Cloud checkout update failed', error);
+            notify('Cloud sync error');
+          }
+        }
         notify(`${t('checkout_done')}: ${yen(total)}`);
         selectedOutsideOrderId = '';
         receivedInput.value = '';
@@ -677,6 +732,7 @@
     });
     window.addEventListener('storage', render);
     window.addEventListener('irakutech:lang', render);
+    cloud?.startPolling?.(core, render);
     render();
   }
 
@@ -904,6 +960,12 @@
       const reset = event.target.closest('[data-reset]');
       if (reset) {
         core.resetDemo();
+        if (cloud?.configured?.()) {
+          cloud.resetOrders().then(() => syncCloud(render)).catch((error) => {
+            console.warn('Cloud reset failed', error);
+            notify('Cloud sync error');
+          });
+        }
         notify(t('demo_reset'));
         render();
       }
@@ -1009,6 +1071,7 @@
 
     window.addEventListener('storage', render);
     window.addEventListener('irakutech:lang', render);
+    cloud?.startPolling?.(core, render);
     render();
   }
 
