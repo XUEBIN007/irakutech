@@ -272,6 +272,44 @@ assert.strictEqual(activeLabor.entries.find((entry) => entry.staffId === 'yamada
 
 localStorage.clear();
 core.loadStore();
+Array.from({ length: 10 }, (_, index) => index + 1).forEach((number) => {
+  core.upsertStaff({
+    id: `part-${number}`,
+    name: `兼职${number}`,
+    role: number <= 5 ? 'hall' : 'kitchen',
+    active: true,
+    hourlyWage: 1100 + (number * 10)
+  });
+});
+[
+  ['part-1', '09:00', '13:00'],
+  ['part-2', '09:00', '13:00'],
+  ['part-3', '10:00', '16:00'],
+  ['part-4', '11:00', '17:00']
+].forEach(([staffId, startTime, endTime]) => {
+  core.upsertStaffSchedule({
+    staffId,
+    date: '2026-06-08',
+    startTime,
+    endTime,
+    breakMinutes: 0
+  });
+});
+core.clockIn('part-1', new Date('2026-06-08T08:58:00+09:00'));
+core.clockIn('part-2', new Date('2026-06-08T09:18:00+09:00'));
+const coverage = core.laborSummary(new Date('2026-06-08T10:30:00+09:00')).coverage;
+assert.strictEqual(coverage.scheduledCount, 4);
+assert.strictEqual(coverage.clockedInScheduledCount, 2);
+assert.strictEqual(coverage.onDutyCount, 2);
+assert.strictEqual(coverage.lateCount, 1);
+assert.strictEqual(coverage.missingCount, 1);
+assert.strictEqual(coverage.upcomingCount, 1);
+assert.strictEqual(coverage.missing[0].staffId, 'part-3');
+assert.strictEqual(coverage.late[0].staffId, 'part-2');
+assert.strictEqual(coverage.upcoming[0].staffId, 'part-4');
+
+localStorage.clear();
+core.loadStore();
 core.openTable('3', { guestCount: 4, note: '予約 山本' });
 let tableOpsStore = core.loadStore();
 assert.strictEqual(tableOpsStore.tables.find((entry) => entry.id === '3').status, 'occupied');

@@ -872,6 +872,26 @@
       }
       document.querySelector('[data-labor-worked]').textContent = formatMinutes(labor.totals.workedMinutes);
       document.querySelector('[data-labor-wage]').textContent = yen(labor.totals.estimatedWages);
+      const coverage = labor.coverage || { scheduledCount: 0, clockedInScheduledCount: 0, missingCount: 0, lateCount: 0, upcomingCount: 0, scheduledWageEstimate: 0, missing: [], late: [], upcoming: [] };
+      document.querySelector('[data-coverage-scheduled]').textContent = coverage.scheduledCount;
+      document.querySelector('[data-coverage-clocked]').textContent = coverage.clockedInScheduledCount;
+      document.querySelector('[data-coverage-missing]').textContent = coverage.missingCount;
+      document.querySelector('[data-coverage-late]').textContent = coverage.lateCount;
+      document.querySelector('[data-coverage-upcoming]').textContent = coverage.upcomingCount;
+      document.querySelector('[data-coverage-wage]').textContent = yen(coverage.scheduledWageEstimate);
+      const coverageAlerts = [
+        ...coverage.missing.map((schedule) => ({ severity: 'danger', label: t('missing_staff'), name: schedule.staff?.name || schedule.staffId, detail: `${schedule.startTime}-${schedule.endTime}` })),
+        ...coverage.late.map((entry) => ({ severity: 'warning', label: t('late_staff'), name: entry.staff?.name || entry.staffId, detail: `${entry.lateMinutes}m` }))
+      ];
+      document.querySelector('[data-coverage-alerts]').innerHTML = coverageAlerts.length ? coverageAlerts.map((alert) => `
+        <div class="admin-line ${alert.severity === 'danger' ? 'attention-line' : ''}">
+          <div>
+            <strong>${alert.label}: ${alert.name}</strong>
+            <div class="muted">${alert.detail}</div>
+          </div>
+          <span class="status ${alert.severity === 'danger' ? 'new' : 'preparing'}">${alert.label}</span>
+        </div>
+      `).join('') : `<div class="empty small">${t('staff_coverage_empty')}</div>`;
       document.querySelector('[data-staff-list]').innerHTML = labor.staff.map((staff) => {
         const activeEntry = labor.entries.find((entry) => entry.staffId === staff.id && !entry.clockOut);
         const dayEntry = labor.entries.find((entry) => entry.staffId === staff.id);

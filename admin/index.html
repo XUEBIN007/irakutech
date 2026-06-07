@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>管理 | 居楽テック</title>
-  <link rel="stylesheet" href="../assets/izakaya-app.css?v=20260608b">
+  <link rel="stylesheet" href="../assets/izakaya-app.css?v=20260608c">
 </head>
 <body data-view="admin">
   <div class="app-shell">
@@ -143,6 +143,16 @@
               <span data-i18n="worked_time">勤務時間</span><strong data-labor-worked>0:00</strong>
               <span data-i18n="estimated_wage">概算人件費</span><strong class="price" data-labor-wage>¥0</strong>
             </div>
+            <h3 data-i18n="staff_coverage">今日の人員</h3>
+            <div class="overview-grid compact">
+              <div class="overview-tile"><span data-i18n="scheduled_staff">出勤予定</span><strong data-coverage-scheduled>0</strong></div>
+              <div class="overview-tile"><span data-i18n="clocked_staff">打刻済み</span><strong data-coverage-clocked>0</strong></div>
+              <div class="overview-tile"><span data-i18n="missing_staff">未打刻</span><strong data-coverage-missing>0</strong></div>
+              <div class="overview-tile"><span data-i18n="late_staff">遅刻</span><strong data-coverage-late>0</strong></div>
+              <div class="overview-tile"><span data-i18n="upcoming_staff">これから</span><strong data-coverage-upcoming>0</strong></div>
+              <div class="overview-tile"><span data-i18n="scheduled_labor_cost">予定人件費</span><strong class="price" data-coverage-wage>¥0</strong></div>
+            </div>
+            <div class="ops-list" data-coverage-alerts></div>
             <div class="ops-list" data-staff-list></div>
           </div>
         </div>
@@ -167,10 +177,10 @@
       </section>
     </main>
   </div>
-  <script src="../assets/izakaya-core.js?v=20260608b"></script>
-  <script src="../assets/izakaya-config.js?v=20260608b"></script>
-  <script src="../assets/izakaya-cloud.js?v=20260608b"></script>
-  <script src="../assets/izakaya-i18n.js?v=20260608b"></script>
-  <script src="../assets/izakaya-ui.js?v=20260608b"></script>
+  <script src="../assets/izakaya-core.js?v=20260608c"></script>
+  <script src="../assets/izakaya-config.js?v=20260608c"></script>
+  <script src="../assets/izakaya-cloud.js?v=20260608c"></script>
+  <script src="../assets/izakaya-i18n.js?v=20260608c"></script>
+  <script src="../assets/izakaya-ui.js?v=20260608c"></script>
 </body>
 </html>

@@ -1080,12 +1080,39 @@
       breakMinutes: result.breakMinutes + entry.breakMinutes,
       estimatedWages: result.estimatedWages + entry.estimatedWage
     }), { workedMinutes: 0, breakMinutes: 0, estimatedWages: 0 });
+    const nowMinutes = minutesOfDay(now);
+    const scheduledEntries = schedules.map((schedule) => {
+      const dayEntry = entries.find((entry) => entry.staffId === schedule.staffId);
+      const bounds = scheduleBounds(schedule);
+      const staff = schedule.staff || {};
+      return {
+        ...schedule,
+        entry: dayEntry || null,
+        scheduledWage: Math.round((schedule.scheduledMinutes / 60) * Number(staff.hourlyWage || 0)),
+        isStarted: bounds.start <= nowMinutes
+      };
+    });
+    const missing = scheduledEntries.filter((schedule) => schedule.isStarted && !schedule.entry);
+    const upcoming = scheduledEntries.filter((schedule) => !schedule.isStarted && !schedule.entry);
+    const late = entries.filter((entry) => entry.schedule && entry.lateMinutes > 0);
     return {
       staff: store.staff,
       schedules,
       entries,
       onDuty: entries.filter((entry) => !entry.clockOut),
-      totals
+      totals,
+      coverage: {
+        scheduledCount: scheduledEntries.length,
+        clockedInScheduledCount: scheduledEntries.filter((schedule) => schedule.entry).length,
+        onDutyCount: entries.filter((entry) => !entry.clockOut).length,
+        missingCount: missing.length,
+        lateCount: late.length,
+        upcomingCount: upcoming.length,
+        scheduledWageEstimate: scheduledEntries.reduce((sum, schedule) => sum + schedule.scheduledWage, 0),
+        missing,
+        late,
+        upcoming
+      }
     };
   }
 

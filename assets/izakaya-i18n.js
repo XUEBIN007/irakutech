@@ -34,6 +34,7 @@
       daily_report: '営業日報', top_items: '売れ筋商品', payment_methods: '支払い別売上',
       staff_timeclock: 'スタッフ打刻', staff_name: 'スタッフ名', staff_role: '役割', save_staff: 'スタッフ保存', clock_in: '出勤', start_break: '休憩開始', end_break: '休憩終了', clock_out: '退勤', on_duty: '勤務中', worked_time: '勤務時間', break_time: '休憩', staff_saved: 'スタッフを保存しました', timeclock_updated: '打刻を更新しました'
       ,staff_schedule: 'シフト', schedule_date: '日付', start_time: '開始', end_time: '終了', hourly_wage: '時給', save_schedule: 'シフト保存', late: '遅刻', early_leave: '早退', estimated_wage: '概算人件費', scheduled_time: '予定時間', schedule_saved: 'シフトを保存しました'
+      ,staff_coverage: '今日の人員', scheduled_staff: '出勤予定', clocked_staff: '打刻済み', missing_staff: '未打刻', late_staff: '遅刻', upcoming_staff: 'これから', scheduled_labor_cost: '予定人件費', staff_coverage_empty: '現在、人員対応が必要なシフトはありません。'
       ,invalid_table: 'このQRコードは現在利用できません。スタッフにお声がけください。'
       ,audit_log: '操作ログ', audit_empty: '操作履歴はまだありません。'
       ,manager_alerts: '店長アラート', manager_alerts_empty: '確認が必要な項目はありません。', alert_unpaid_orders: '未会計があります', alert_low_stock: '低在庫があります', alert_cash_difference: '現金差額があります', alert_staff_on_duty: '勤務中スタッフ'
@@ -67,6 +68,7 @@
       daily_report: '营业日报', top_items: '热销商品', payment_methods: '支付方式统计',
       staff_timeclock: '员工打卡', staff_name: '员工姓名', staff_role: '岗位', save_staff: '保存员工', clock_in: '上班打卡', start_break: '开始休息', end_break: '结束休息', clock_out: '下班打卡', on_duty: '在岗', worked_time: '工作时间', break_time: '休息', staff_saved: '员工已保存', timeclock_updated: '打卡已更新'
       ,staff_schedule: '排班', schedule_date: '日期', start_time: '开始', end_time: '结束', hourly_wage: '时薪', save_schedule: '保存排班', late: '迟到', early_leave: '早退', estimated_wage: '预估人工费', scheduled_time: '计划时间', schedule_saved: '排班已保存'
+      ,staff_coverage: '今日人手', scheduled_staff: '应到', clocked_staff: '已打卡', missing_staff: '未打卡', late_staff: '迟到', upcoming_staff: '未开始', scheduled_labor_cost: '计划人工费', staff_coverage_empty: '当前没有需要处理的人手问题。'
       ,invalid_table: '这个二维码当前不可使用，请联系店员。'
       ,audit_log: '操作日志', audit_empty: '暂无操作记录。'
       ,manager_alerts: '老板提醒', manager_alerts_empty: '暂无需要处理的事项。', alert_unpaid_orders: '还有未结账订单', alert_low_stock: '存在低库存商品', alert_cash_difference: '存在现金差额', alert_staff_on_duty: '员工仍在岗'
@@ -100,6 +102,7 @@
       daily_report: 'Daily Report', top_items: 'Top Items', payment_methods: 'Payment Methods',
       staff_timeclock: 'Staff Clock', staff_name: 'Staff Name', staff_role: 'Role', save_staff: 'Save Staff', clock_in: 'Clock In', start_break: 'Start Break', end_break: 'End Break', clock_out: 'Clock Out', on_duty: 'On Duty', worked_time: 'Worked', break_time: 'Break', staff_saved: 'Staff saved', timeclock_updated: 'Time clock updated'
       ,staff_schedule: 'Schedule', schedule_date: 'Date', start_time: 'Start', end_time: 'End', hourly_wage: 'Hourly Wage', save_schedule: 'Save Schedule', late: 'Late', early_leave: 'Early Leave', estimated_wage: 'Estimated Labor', scheduled_time: 'Scheduled', schedule_saved: 'Schedule saved'
+      ,staff_coverage: 'Today Staffing', scheduled_staff: 'Scheduled', clocked_staff: 'Clocked', missing_staff: 'Missing', late_staff: 'Late', upcoming_staff: 'Upcoming', scheduled_labor_cost: 'Planned Labor', staff_coverage_empty: 'No staffing issues need attention.'
       ,invalid_table: 'This QR code is not available. Please ask the staff.'
       ,audit_log: 'Audit Log', audit_empty: 'No operations yet.'
       ,manager_alerts: 'Manager Alerts', manager_alerts_empty: 'No items need attention.', alert_unpaid_orders: 'Unpaid orders remain', alert_low_stock: 'Low stock items', alert_cash_difference: 'Cash difference exists', alert_staff_on_duty: 'Staff still on duty'
