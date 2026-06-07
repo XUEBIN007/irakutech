@@ -38,9 +38,13 @@
     return t('order_title', { table: order.tableId });
   }
 
+  function orderTypeText(orderType) {
+    return t(`order_type_${String(orderType || 'dine-in').replaceAll('-', '_')}`);
+  }
+
   function fulfillmentMeta(order) {
     const parts = [];
-    if (order.orderType && order.orderType !== 'dine-in') parts.push(t(`order_type_${order.orderType}`));
+    if (order.orderType && order.orderType !== 'dine-in') parts.push(orderTypeText(order.orderType));
     if (order.fulfillment?.requestedAt) parts.push(`${t('requested_time')}: ${order.fulfillment.requestedAt}`);
     if (order.fulfillment?.address) parts.push(order.fulfillment.address);
     if (order.customer?.phone) parts.push(order.customer.phone);
@@ -81,6 +85,7 @@
         document.querySelector('[data-cart]').innerHTML = `<div class="empty">${t('invalid_table')}</div>`;
         document.querySelector('[data-total]').textContent = yen(0);
         document.querySelector('[data-submit]').disabled = true;
+        document.querySelector('[data-submit]').textContent = t('order_submit');
         document.querySelector('[data-order-count]').textContent = t('open_order_count', { count: 0 });
         document.querySelector('[data-open-orders]').innerHTML = `<div class="empty small">${t('ordered_empty')}</div>`;
         document.querySelector('[data-open-total]').textContent = yen(0);
@@ -129,7 +134,10 @@
         `;
       }).join('') : `<div class="empty">${t('cart_empty')}</div>`;
       document.querySelector('[data-total]').textContent = yen(core.cartTotal(cart, store.menu));
-      document.querySelector('[data-submit]').disabled = cart.length === 0;
+      const submitButton = document.querySelector('[data-submit]');
+      submitButton.disabled = false;
+      submitButton.textContent = cart.length ? t('order_submit') : t('add_items_first');
+      submitButton.title = cart.length ? t('order_submit') : t('cart_empty');
       const summary = core.tableOpenSummary(tableId);
       document.querySelector('[data-order-count]').textContent = t('open_order_count', { count: summary.orders.length });
       document.querySelector('[data-open-orders]').innerHTML = summary.orders.length ? summary.orders.map((order) => `
@@ -170,7 +178,13 @@
       }
       const submit = event.target.closest('[data-submit]');
       if (submit) {
-        const order = core.createOrder({ tableId, cart: core.loadCart(tableId) });
+        const cart = core.loadCart(tableId);
+        if (!cart.length) {
+          notify(t('add_items_first'));
+          render();
+          return;
+        }
+        const order = core.createOrder({ tableId, cart });
         notify(`${t('accepted')}: ${order.id}`);
         render();
       }
@@ -219,7 +233,7 @@
             <div>
               <div class="ticket-badges">
                 <span class="status ${order.status}">${statusText(order.status)}</span>
-                <span class="order-type ${orderTypeClass}">${t(`order_type_${order.orderType || 'dine-in'}`)}</span>
+                <span class="order-type ${orderTypeClass}">${orderTypeText(order.orderType)}</span>
                 ${isRush ? `<span class="rush-badge">${t('rush_order')}</span>` : ''}
               </div>
               <h2>${orderLabel(order)}</h2>
@@ -384,7 +398,10 @@
       document.querySelector('[data-subtotal]').textContent = yen(subtotal);
       document.querySelector('[data-delivery-fee]').textContent = yen(deliveryFee());
       document.querySelector('[data-total]').textContent = yen(subtotal + deliveryFee());
-      document.querySelector('[data-submit-takeout]').disabled = cart.length === 0;
+      const takeoutSubmit = document.querySelector('[data-submit-takeout]');
+      takeoutSubmit.disabled = false;
+      takeoutSubmit.textContent = cart.length ? t('takeout_submit') : t('add_items_first');
+      takeoutSubmit.title = cart.length ? t('takeout_submit') : t('cart_empty');
     }
 
     document.addEventListener('click', (event) => {
@@ -418,6 +435,12 @@
       }
       const submit = event.target.closest('[data-submit-takeout]');
       if (submit) {
+        const cart = core.loadCart(cartId);
+        if (!cart.length) {
+          notify(t('add_items_first'));
+          render();
+          return;
+        }
         const name = document.querySelector('[data-customer-name]').value.trim();
         const phone = document.querySelector('[data-customer-phone]').value.trim();
         const requestedAt = document.querySelector('[data-requested-time]').value.trim();
@@ -428,7 +451,7 @@
         }
         const order = core.createOrder({
           orderType: fulfillmentMethod,
-          cart: core.loadCart(cartId),
+          cart,
           customer: { name, phone },
           fulfillment: {
             method: fulfillmentMethod,
