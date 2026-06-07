@@ -34,6 +34,11 @@ assert.match(notFound, /デモ一覧/);
 assert.match(index, /href="privacy\.html"/);
 assert.match(index, /href="legal\.html"/);
 assert.match(index, /href="terms\.html"/);
+assert.match(index, /href="order\/\?table=3"/);
+assert.match(index, /href="takeout\/"/);
+assert.match(index, /href="kitchen\/"/);
+assert.match(index, /href="checkout\/"/);
+assert.match(index, /href="admin\/"/);
 
 const privacy = read('privacy.html');
 const legal = read('legal.html');
