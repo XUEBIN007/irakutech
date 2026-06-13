@@ -1,13 +1,13 @@
 :root {
-  --teal: #0ABFBC;
-  --teal-dark: #078e8b;
-  --teal-soft: #E0F7F7;
+  --teal: #B42318;
+  --teal-dark: #8F1D14;
+  --teal-soft: #FFF1E6;
   --ink: #0F1923;
   --ink-soft: #263847;
   --muted: #6B8291;
-  --line: rgba(10, 191, 188, 0.18);
+  --line: rgba(180, 35, 24, 0.18);
   --paper: #FFFFFF;
-  --wash: #F6FAFA;
+  --wash: #FFF9F2;
   --shadow: 0 18px 60px rgba(15, 25, 35, 0.08);
   --radius: 8px;
 }
@@ -59,7 +59,7 @@ button, input, select, textarea {
   font-size: 21px;
   font-weight: 800;
   text-decoration: none;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
 }
 
 .nav {
@@ -84,7 +84,35 @@ button, input, select, textarea {
   padding: 5px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(10,191,188,.07);
+  background: rgba(180,35,24,.07);
+}
+
+.store-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid rgba(180,35,24,.18);
+  border-radius: 8px;
+  background: #fffaf4;
+  color: var(--ink-soft);
+}
+
+.store-strip div {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.store-strip strong {
+  color: var(--teal-dark);
+}
+
+.store-strip span {
+  font-size: 13px;
 }
 
 .lang-select-label {
@@ -639,9 +667,19 @@ button, input, select, textarea {
   border-left: 4px solid #f59e0b;
 }
 
-.kitchen-ticket.rush {
+.kitchen-ticket.rush,
+.kitchen-ticket.urgent {
   border-color: rgba(220,38,38,.36);
   box-shadow: 0 16px 46px rgba(220,38,38,.08);
+}
+
+.kitchen-ticket.warning {
+  border-color: rgba(245,158,11,.34);
+  box-shadow: 0 16px 46px rgba(245,158,11,.08);
+}
+
+.kitchen-ticket.normal {
+  border-color: rgba(22,101,52,.18);
 }
 
 .ticket-head {
@@ -661,6 +699,39 @@ button, input, select, textarea {
 .ticket-head h2 {
   margin: 9px 0 4px;
   font-size: 22px;
+}
+
+.ticket-age {
+  min-width: 58px;
+  text-align: center;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #111827;
+  color: #fff;
+  font-weight: 900;
+}
+
+.kitchen-dish {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0;
+  padding: 14px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid rgba(15,25,35,.1);
+}
+
+.kitchen-dish strong {
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.kitchen-dish span {
+  color: var(--teal-dark);
+  font-size: 22px;
+  font-weight: 900;
 }
 
 .order-type,

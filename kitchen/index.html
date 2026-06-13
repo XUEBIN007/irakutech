@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>厨房 | 居楽テック</title>
-  <link rel="stylesheet" href="../assets/izakaya-app.css?v=20260608c">
+  <title>厨房 | 本町中華 QR注文</title>
+  <link rel="stylesheet" href="../assets/izakaya-app.css?v=20260613-timeout">
 </head>
 <body data-view="kitchen">
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="../">居楽テック</a>
+      <a class="brand" href="../" data-i18n="brand">本町中華 QR注文</a>
       <div class="topbar-right">
         <nav class="nav">
           <a href="../order/?table=3" data-i18n="nav_order">注文</a>
@@ -27,6 +27,13 @@
     </header>
     <div class="demo-notice" data-i18n="demo_notice">公開 demo です。入力データはブラウザ内に保存されます。実在する個人情報・決済情報は入力しないでください。</div>
     <main class="page">
+      <section class="store-strip">
+        <div>
+          <strong data-store-name>本町中華食堂（仮）</strong>
+          <span data-store-address>船橋市本町エリア</span>
+        </div>
+        <span data-i18n="course_note">食べ飲み放題は4名様から・ラストオーダー15分前です。</span>
+      </section>
       <div class="page-head">
         <div>
           <div class="eyebrow" data-i18n="kitchen_eyebrow">Kitchen Display</div>
@@ -38,10 +45,10 @@
       <section class="kitchen-board" data-orders></section>
     </main>
   </div>
-  <script src="../assets/izakaya-core.js?v=20260608c"></script>
-  <script src="../assets/izakaya-config.js?v=20260608c"></script>
-  <script src="../assets/izakaya-cloud.js?v=20260608c"></script>
-  <script src="../assets/izakaya-i18n.js?v=20260608c"></script>
-  <script src="../assets/izakaya-ui.js?v=20260608c"></script>
+  <script src="../assets/izakaya-core.js?v=20260613-timeout"></script>
+  <script src="../assets/izakaya-config.js?v=20260613-timeout"></script>
+  <script src="../assets/izakaya-cloud.js?v=20260613-timeout"></script>
+  <script src="../assets/izakaya-i18n.js?v=20260613-timeout"></script>
+  <script src="../assets/izakaya-ui.js?v=20260613-timeout"></script>
 </body>
 </html>

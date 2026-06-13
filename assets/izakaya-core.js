@@ -1,43 +1,122 @@
 (function (root) {
-  const STORE_KEY = 'irakutech.mini.store.v1';
+  const STORE_KEY = 'irakutech.honcho-chinese.store.v1';
   const CART_PREFIX = 'irakutech.mini.cart.';
 
   const seed = {
+    restaurant: {
+      nameJa: '本町中華食堂（仮）',
+      nameZh: '本町中华食堂（暂定）',
+      nameEn: 'Honcho Chinese Kitchen (Pilot)',
+      shortName: '本町中華',
+      address: '船橋市本町エリア',
+      phone: '店頭確認',
+      station: '京成船橋駅西口から徒歩約5分 / JR船橋駅から徒歩約7分',
+      notes: [
+        '公開情報とGoogle写真をもとにした導入用デモです。店名・価格は店頭確認後に確定します。',
+        '食べ飲み放題は4名様から、ラストオーダーは終了15分前。',
+        '公開情報では現金中心の会計です。正式導入時に支払い方法を確認してください。'
+      ]
+    },
+    settings: {
+      defaultPaymentMethod: 'cash',
+      cashFirst: true,
+      paymentMethods: [
+        { id: 'cash', enabled: true, nameJa: '現金', nameZh: '现金', nameEn: 'Cash' },
+        { id: 'card', enabled: false, nameJa: 'カード', nameZh: '刷卡', nameEn: 'Card' },
+        { id: 'qr', enabled: false, nameJa: 'QR決済', nameZh: 'QR支付', nameEn: 'QR Payment' }
+      ],
+      serviceMode: 'table-qr',
+      paymentNote: '公開情報では現金中心。カード・QR決済は店頭確認後に有効化。'
+    },
     categories: [
-      { id: 'drink', nameJa: 'ドリンク', nameZh: '酒水' },
-      { id: 'yakitori', nameJa: '焼き鳥', nameZh: '烤串' },
-      { id: 'fried', nameJa: '揚げ物', nameZh: '炸物' },
-      { id: 'sashimi', nameJa: '刺身', nameZh: '刺身' },
-      { id: 'rice', nameJa: 'ご飯もの', nameZh: '主食' }
+      { id: 'recommended', nameJa: 'おすすめ', nameZh: '推荐', nameEn: 'Recommended' },
+      { id: 'setmeal', nameJa: '定食', nameZh: '套餐定食', nameEn: 'Set Meals' },
+      { id: 'banquet', nameJa: '晩酌セット', nameZh: '小酌套餐', nameEn: 'Drink Set' },
+      { id: 'course', nameJa: '食べ飲み放題', nameZh: '吃喝放题', nameEn: 'All-you-can-eat' },
+      { id: 'noodle', nameJa: '麺・拉麺', nameZh: '面类', nameEn: 'Noodles' },
+      { id: 'rice', nameJa: '飯類', nameZh: '饭类', nameEn: 'Rice' },
+      { id: 'dimsum', nameJa: '点心', nameZh: '点心', nameEn: 'Dim Sum' },
+      { id: 'cold', nameJa: '前菜・冷菜', nameZh: '凉菜前菜', nameEn: 'Cold Dishes' },
+      { id: 'meat', nameJa: '肉料理', nameZh: '肉类', nameEn: 'Meat' },
+      { id: 'seafood', nameJa: '海鮮・野菜', nameZh: '海鲜蔬菜', nameEn: 'Seafood & Vegetables' },
+      { id: 'fried', nameJa: '揚げ物', nameZh: '炸物', nameEn: 'Fried' },
+      { id: 'drink', nameJa: 'ドリンク', nameZh: '饮料酒水', nameEn: 'Drinks' }
     ],
     menu: [
-      { id: 'beer', categoryId: 'drink', icon: '🍺', nameJa: '生ビール (中)', nameZh: '生啤（中）', price: 480, desc: '定番の一杯。', recommended: true, soldOut: false },
-      { id: 'highball', categoryId: 'drink', icon: '🥃', nameJa: 'ハイボール', nameZh: 'Highball', price: 420, desc: 'すっきり爽快。', recommended: false, soldOut: false },
-      { id: 'lemon-sour', categoryId: 'drink', icon: '🍋', nameJa: 'レモンサワー', nameZh: '柠檬沙瓦', price: 430, desc: '揚げ物に合う酸味。', recommended: false, soldOut: false },
-      { id: 'momo', categoryId: 'yakitori', icon: '🍢', nameJa: 'もも串', nameZh: '鸡腿肉串', price: 180, desc: '塩・タレ対応。', recommended: true, soldOut: false },
-      { id: 'negima', categoryId: 'yakitori', icon: '🍢', nameJa: 'ねぎま', nameZh: '葱鸡肉串', price: 190, desc: '香ばしいねぎと鶏肉。', recommended: false, soldOut: false },
-      { id: 'karaage', categoryId: 'fried', icon: '🍗', nameJa: 'から揚げ', nameZh: '炸鸡块', price: 580, desc: '外はカリッと中はジューシー。', recommended: true, soldOut: false },
-      { id: 'potato', categoryId: 'fried', icon: '🍟', nameJa: 'ポテトフライ', nameZh: '炸薯条', price: 420, desc: 'お子様にも人気。', recommended: false, soldOut: false },
-      { id: 'sashimi-mix', categoryId: 'sashimi', icon: '🐟', nameJa: '刺身盛り合わせ', nameZh: '刺身拼盘', price: 1200, desc: '本日の鮮魚三点盛り。', recommended: true, soldOut: false },
-      { id: 'ochazuke', categoryId: 'rice', icon: '🍚', nameJa: '鮭茶漬け', nameZh: '鲑鱼茶泡饭', price: 520, desc: '締めにぴったり。', recommended: false, soldOut: false }
+      { id: 'tabe-nomi-3500', categoryId: 'course', icon: '🎉', nameJa: '食べ飲み放題 120分', nameZh: '120分钟吃喝放题', nameEn: '120 min all-you-can-eat & drink', price: 3500, desc: '4名様から。100品以上・50種類以上飲み放題。L.O.15分前。', recommended: true, soldOut: false },
+      { id: 'banshaku-set', categoryId: 'banquet', icon: '🍺', nameJa: '晩酌セット', nameZh: '小酌套餐', nameEn: 'Evening drink set', price: 680, desc: '飲み物1杯 + 料理1品。生ビール、サワー、ハイ類、焼酎、ソフトドリンク。', recommended: true, soldOut: false },
+      { id: 'sweet-sour-pork', categoryId: 'recommended', icon: '🥢', nameJa: '酢豚', nameZh: '咕咾肉', nameEn: 'Sweet and sour pork', price: 890, desc: '公開メニュー掲載の定番人気料理。', recommended: true, soldOut: false },
+      { id: 'green-pepper-pork', categoryId: 'recommended', icon: '🫑', nameJa: 'チンジャオロース', nameZh: '青椒肉丝', nameEn: 'Green pepper pork', price: 790, desc: '写真と公開メニューに合う人気中華。', recommended: true, soldOut: false },
+      { id: 'shrimp-mayo', categoryId: 'recommended', icon: '🍤', nameJa: 'エビのマヨネーズ和え', nameZh: '蛋黄虾仁', nameEn: 'Shrimp mayonnaise', price: 890, desc: '晩酌セット写真にも見える人気海鮮。', recommended: true, soldOut: false },
+      { id: 'pork-fried-set', categoryId: 'setmeal', icon: '🍱', nameJa: '豚肩ロース揚げオイスターソース炒め定食', nameZh: '炸猪肩肉蚝油炒定食', nameEn: 'Fried pork shoulder oyster sauce set', price: 780, desc: '店頭白板の定食メニュー。', recommended: false, soldOut: false },
+      { id: 'liver-egg-set', categoryId: 'setmeal', icon: '🍱', nameJa: 'レバー玉ネギ黒胡椒炒め定食', nameZh: '猪肝洋葱黑胡椒定食', nameEn: 'Liver onion black pepper set', price: 680, desc: '店頭白板の定食メニュー。', recommended: false, soldOut: false },
+      { id: 'shrimp-egg-chili-set', categoryId: 'setmeal', icon: '🍱', nameJa: 'エビ玉子チリソース炒め定食', nameZh: '虾仁鸡蛋辣酱定食', nameEn: 'Shrimp egg chili set', price: 780, desc: '店頭白板の定食メニュー。', recommended: false, soldOut: false },
+      { id: 'pork-egg-fungus-set', categoryId: 'setmeal', icon: '🍱', nameJa: '豚肉・木耳・玉子炒め定食', nameZh: '木须肉定食', nameEn: 'Pork egg wood ear set', price: 780, desc: '店頭白板の定食メニュー。', recommended: false, soldOut: false },
+      { id: 'yodare-chicken-set', categoryId: 'setmeal', icon: '🍱', nameJa: 'よだれ鶏定食', nameZh: '口水鸡定食', nameEn: 'Mouthwatering chicken set', price: 780, desc: '店頭白板の定食メニュー。', recommended: false, soldOut: false },
+      { id: 'mapo-tofu-set', categoryId: 'setmeal', icon: '🍱', nameJa: 'マーボー豆腐定食', nameZh: '麻婆豆腐定食', nameEn: 'Mapo tofu set', price: 680, desc: '店頭白板の定食メニュー。', recommended: true, soldOut: false },
+      { id: 'pork-kimchi-set', categoryId: 'setmeal', icon: '🍱', nameJa: '豚バラキムチチャーハン定食', nameZh: '猪五花泡菜炒饭定食', nameEn: 'Pork kimchi fried rice set', price: 780, desc: '店頭白板の定食メニュー。', recommended: false, soldOut: false },
+      { id: 'thick-fried-miso-rice', categoryId: 'setmeal', icon: '🍱', nameJa: '厚揚げと高菜肉味噌ご飯定食', nameZh: '厚炸豆腐高菜肉酱饭定食', nameEn: 'Tofu mustard greens miso rice set', price: 780, desc: '店頭白板の定食メニュー。', recommended: false, soldOut: false },
+      { id: 'spicy-miso-ramen', categoryId: 'noodle', icon: '🍜', nameJa: '辛味噌拉麺', nameZh: '辣味噌拉面', nameEn: 'Spicy miso ramen', price: 790, desc: '写真掲載の拉麺。半炒飯 +100円、大盛り +100円。', recommended: true, soldOut: false },
+      { id: 'seafood-ramen', categoryId: 'noodle', icon: '🍜', nameJa: '海鮮拉麺', nameZh: '海鲜拉面', nameEn: 'Seafood ramen', price: 790, desc: '写真掲載の拉麺。', recommended: false, soldOut: false },
+      { id: 'tantanmen', categoryId: 'noodle', icon: '🍜', nameJa: '担々麺', nameZh: '担担面', nameEn: 'Tantanmen', price: 790, desc: '胡麻と辛味の人気麺。', recommended: true, soldOut: false },
+      { id: 'char-siu-ramen', categoryId: 'noodle', icon: '🍜', nameJa: '叉焼拉麺', nameZh: '叉烧拉面', nameEn: 'Char siu ramen', price: 790, desc: '写真掲載の拉麺。', recommended: false, soldOut: false },
+      { id: 'canton-men', categoryId: 'noodle', icon: '🍜', nameJa: '広東麺', nameZh: '广东面', nameEn: 'Canton noodles', price: 790, desc: '具だくさんのあんかけ麺。', recommended: false, soldOut: false },
+      { id: 'wonton-men', categoryId: 'noodle', icon: '🍜', nameJa: 'ワンタン麺', nameZh: '云吞面', nameEn: 'Wonton noodles', price: 790, desc: '写真掲載の拉麺。', recommended: false, soldOut: false },
+      { id: 'chicken-ramen', categoryId: 'noodle', icon: '🍜', nameJa: '鶏肉拉麺', nameZh: '鸡肉拉面', nameEn: 'Chicken ramen', price: 790, desc: '写真掲載の拉麺。', recommended: false, soldOut: false },
+      { id: 'sanratanmen', categoryId: 'noodle', icon: '🍜', nameJa: 'サンラータンメン', nameZh: '酸辣汤面', nameEn: 'Hot and sour noodles', price: 790, desc: '酸味と辛味のスープ麺。', recommended: false, soldOut: false },
+      { id: 'taiwan-ramen', categoryId: 'noodle', icon: '🍜', nameJa: '台湾拉麺', nameZh: '台湾拉面', nameEn: 'Taiwan ramen', price: 690, desc: '写真掲載の拉麺。', recommended: false, soldOut: false },
+      { id: 'miso-ramen', categoryId: 'noodle', icon: '🍜', nameJa: '味噌拉麺', nameZh: '味噌拉面', nameEn: 'Miso ramen', price: 690, desc: '写真掲載の拉麺。', recommended: false, soldOut: false },
+      { id: 'gomoku-fried-rice', categoryId: 'rice', icon: '🍚', nameJa: '五目チャーハン', nameZh: '五目炒饭', nameEn: 'Mixed fried rice', price: 680, desc: '公開メニュー掲載の飯類。', recommended: true, soldOut: false },
+      { id: 'takana-fried-rice', categoryId: 'rice', icon: '🍚', nameJa: '高菜チャーハン', nameZh: '高菜炒饭', nameEn: 'Mustard greens fried rice', price: 680, desc: '公開メニュー掲載の飯類。', recommended: false, soldOut: false },
+      { id: 'egg-fried-rice', categoryId: 'rice', icon: '🍚', nameJa: '玉子チャーハン', nameZh: '鸡蛋炒饭', nameEn: 'Egg fried rice', price: 650, desc: 'シンプルな定番炒飯。', recommended: false, soldOut: false },
+      { id: 'seafood-fried-rice', categoryId: 'rice', icon: '🍚', nameJa: '海鮮チャーハン', nameZh: '海鲜炒饭', nameEn: 'Seafood fried rice', price: 780, desc: '海鮮入り炒飯。', recommended: false, soldOut: false },
+      { id: 'chuka-don', categoryId: 'rice', icon: '🍛', nameJa: '中華丼', nameZh: '中华盖饭', nameEn: 'Chinese rice bowl', price: 780, desc: '野菜と肉のあんかけご飯。', recommended: false, soldOut: false },
+      { id: 'tenshin-don', categoryId: 'rice', icon: '🍛', nameJa: '天津丼', nameZh: '天津饭', nameEn: 'Crab omelet rice bowl', price: 780, desc: 'ふんわり玉子のあんかけ丼。', recommended: false, soldOut: false },
+      { id: 'grilled-gyoza', categoryId: 'dimsum', icon: '🥟', nameJa: '焼き餃子（6ヶ）', nameZh: '煎饺（6个）', nameEn: 'Pan-fried gyoza (6)', price: 380, desc: '晩酌セット写真掲載。', recommended: true, soldOut: false },
+      { id: 'soup-gyoza', categoryId: 'dimsum', icon: '🥟', nameJa: '担々スープ餃子（6ヶ）', nameZh: '担担汤饺（6个）', nameEn: 'Tantan soup gyoza (6)', price: 580, desc: '写真掲載の点心。', recommended: false, soldOut: false },
+      { id: 'water-gyoza', categoryId: 'dimsum', icon: '🥟', nameJa: '水餃子（6ヶ）', nameZh: '水饺（6个）', nameEn: 'Boiled dumplings (6)', price: 480, desc: '写真掲載の点心。', recommended: false, soldOut: false },
+      { id: 'xiao-long-bao', categoryId: 'dimsum', icon: '🥟', nameJa: '小籠包（4ヶ）', nameZh: '小笼包（4个）', nameEn: 'Soup dumplings (4)', price: 580, desc: '写真掲載の点心。', recommended: true, soldOut: false },
+      { id: 'shumai', categoryId: 'dimsum', icon: '🥟', nameJa: '焼売（4ヶ）', nameZh: '烧卖（4个）', nameEn: 'Shumai (4)', price: 480, desc: '写真掲載の点心。', recommended: false, soldOut: false },
+      { id: 'spring-roll', categoryId: 'dimsum', icon: '🥠', nameJa: '五目春巻（3ヶ）', nameZh: '五目春卷（3个）', nameEn: 'Spring rolls (3)', price: 480, desc: '写真掲載の点心。', recommended: false, soldOut: false },
+      { id: 'sesame-dumpling', categoryId: 'dimsum', icon: '⚪', nameJa: 'ゴマ団子（3ヶ）', nameZh: '芝麻球（3个）', nameEn: 'Sesame balls (3)', price: 420, desc: 'デザートにも合う点心。', recommended: false, soldOut: false },
+      { id: 'banbanji', categoryId: 'cold', icon: '🥒', nameJa: 'バンバンジー', nameZh: '棒棒鸡', nameEn: 'Banbanji chicken', price: 580, desc: '晩酌セット写真掲載。', recommended: false, soldOut: false },
+      { id: 'yodare-chicken', categoryId: 'cold', icon: '🌶️', nameJa: 'よだれ鶏', nameZh: '口水鸡', nameEn: 'Mouthwatering chicken', price: 580, desc: '写真掲載の前菜。', recommended: true, soldOut: false },
+      { id: 'cucumber-salad', categoryId: 'cold', icon: '🥒', nameJa: 'きゅうりの和え物', nameZh: '凉拌黄瓜', nameEn: 'Cucumber salad', price: 380, desc: '晩酌セット写真掲載。', recommended: false, soldOut: false },
+      { id: 'pitan-tofu', categoryId: 'cold', icon: '🥚', nameJa: 'ピータン豆腐', nameZh: '皮蛋豆腐', nameEn: 'Century egg tofu', price: 480, desc: '写真掲載の冷菜。', recommended: false, soldOut: false },
+      { id: 'edamame', categoryId: 'cold', icon: '🫛', nameJa: '枝豆', nameZh: '毛豆', nameEn: 'Edamame', price: 350, desc: '晩酌に合う定番。', recommended: false, soldOut: false },
+      { id: 'mapo-tofu', categoryId: 'meat', icon: '🌶️', nameJa: 'マーボー豆腐', nameZh: '麻婆豆腐', nameEn: 'Mapo tofu', price: 780, desc: '写真掲載の人気料理。', recommended: true, soldOut: false },
+      { id: 'twice-cooked-pork', categoryId: 'meat', icon: '🥘', nameJa: 'ホイコーロー', nameZh: '回锅肉', nameEn: 'Twice-cooked pork', price: 790, desc: '写真掲載の中華定番。', recommended: true, soldOut: false },
+      { id: 'stir-pork-garlic', categoryId: 'meat', icon: '🥘', nameJa: '豚肉とニンニクの芽炒め', nameZh: '蒜苗炒肉', nameEn: 'Pork with garlic shoots', price: 790, desc: '晩酌セット写真掲載。', recommended: false, soldOut: false },
+      { id: 'black-vinegar-pork', categoryId: 'meat', icon: '🥘', nameJa: '黒酢酢豚', nameZh: '黑醋咕咾肉', nameEn: 'Black vinegar pork', price: 890, desc: '写真掲載の人気料理。', recommended: true, soldOut: false },
+      { id: 'tomato-egg', categoryId: 'meat', icon: '🍅', nameJa: 'トマトと玉子炒め', nameZh: '番茄炒蛋', nameEn: 'Tomato and egg stir-fry', price: 680, desc: '写真掲載の家庭風中華。', recommended: false, soldOut: false },
+      { id: 'liver-nira', categoryId: 'meat', icon: '🥬', nameJa: 'レバニラ炒め', nameZh: '韭菜炒猪肝', nameEn: 'Liver and chive stir-fry', price: 790, desc: '写真掲載の定番。', recommended: false, soldOut: false },
+      { id: 'yu-lin-chi', categoryId: 'meat', icon: '🍗', nameJa: 'ユーリンチー', nameZh: '油淋鸡', nameEn: 'Yurinchi chicken', price: 790, desc: '写真掲載の人気鶏料理。', recommended: true, soldOut: false },
+      { id: 'stir-veg-meat', categoryId: 'seafood', icon: '🥬', nameJa: '野菜と肉の炒め', nameZh: '蔬菜炒肉', nameEn: 'Vegetable and meat stir-fry', price: 780, desc: '写真掲載の料理。', recommended: false, soldOut: false },
+      { id: 'shrimp-chili-egg', categoryId: 'seafood', icon: '🍤', nameJa: 'エビ玉子チリソース', nameZh: '虾仁鸡蛋辣酱', nameEn: 'Shrimp egg chili sauce', price: 890, desc: '店頭定食にもある海鮮料理。', recommended: true, soldOut: false },
+      { id: 'whitefish-sweet-sour', categoryId: 'seafood', icon: '🐟', nameJa: '白身魚の甘酢炒め', nameZh: '糖醋白身鱼', nameEn: 'Sweet and sour white fish', price: 890, desc: '晩酌セット写真掲載。', recommended: false, soldOut: false },
+      { id: 'seafood-tofu-stew', categoryId: 'seafood', icon: '🦐', nameJa: '海鮮と豆腐煮込み', nameZh: '海鲜豆腐煲', nameEn: 'Seafood tofu stew', price: 980, desc: '写真掲載のあんかけ煮込み。', recommended: false, soldOut: false },
+      { id: 'broccoli-stir', categoryId: 'seafood', icon: '🥦', nameJa: 'ブロッコリー炒め', nameZh: '炒西兰花', nameEn: 'Stir-fried broccoli', price: 680, desc: '写真掲載の野菜料理。', recommended: false, soldOut: false },
+      { id: 'fried-chicken-cartilage', categoryId: 'fried', icon: '🍗', nameJa: '鶏軟骨の揚げ', nameZh: '炸鸡软骨', nameEn: 'Fried chicken cartilage', price: 480, desc: '晩酌セット写真掲載。', recommended: false, soldOut: false },
+      { id: 'fried-liver', categoryId: 'fried', icon: '🍗', nameJa: '揚げレバー', nameZh: '炸猪肝', nameEn: 'Fried liver', price: 580, desc: '写真掲載の揚げ物。', recommended: false, soldOut: false },
+      { id: 'fried-river-shrimp', categoryId: 'fried', icon: '🦐', nameJa: '揚げ川エビ', nameZh: '炸河虾', nameEn: 'Fried river shrimp', price: 580, desc: '写真掲載の揚げ物。', recommended: false, soldOut: false },
+      { id: 'potato-fries', categoryId: 'fried', icon: '🍟', nameJa: 'ポテトフライ', nameZh: '炸薯条', nameEn: 'French fries', price: 380, desc: '晩酌セット写真掲載。', recommended: false, soldOut: false },
+      { id: 'draft-beer', categoryId: 'drink', icon: '🍺', nameJa: '生ビール', nameZh: '生啤', nameEn: 'Draft beer', price: 500, desc: '晩酌セット対象ドリンク。', recommended: true, soldOut: false },
+      { id: 'sour', categoryId: 'drink', icon: '🍋', nameJa: 'サワー', nameZh: '沙瓦', nameEn: 'Sour cocktail', price: 450, desc: '晩酌セット対象ドリンク。', recommended: false, soldOut: false },
+      { id: 'highball', categoryId: 'drink', icon: '🥃', nameJa: 'ハイボール', nameZh: '嗨棒', nameEn: 'Highball', price: 450, desc: '晩酌セット対象ドリンク。', recommended: false, soldOut: false },
+      { id: 'shochu', categoryId: 'drink', icon: '🍶', nameJa: '焼酎', nameZh: '烧酒', nameEn: 'Shochu', price: 450, desc: '晩酌セット対象ドリンク。', recommended: false, soldOut: false },
+      { id: 'soft-drink', categoryId: 'drink', icon: '🥤', nameJa: 'ソフトドリンク', nameZh: '软饮', nameEn: 'Soft drink', price: 300, desc: '晩酌セット対象ドリンク。', recommended: false, soldOut: false }
     ],
     inventory: [
-      { menuItemId: 'beer', stock: 24, safetyStock: 8 },
-      { menuItemId: 'highball', stock: 24, safetyStock: 8 },
-      { menuItemId: 'lemon-sour', stock: 24, safetyStock: 8 },
-      { menuItemId: 'momo', stock: 30, safetyStock: 10 },
-      { menuItemId: 'negima', stock: 30, safetyStock: 10 },
-      { menuItemId: 'karaage', stock: 18, safetyStock: 6 },
-      { menuItemId: 'potato', stock: 18, safetyStock: 6 },
-      { menuItemId: 'sashimi-mix', stock: 10, safetyStock: 3 },
-      { menuItemId: 'ochazuke', stock: 16, safetyStock: 5 }
     ],
     inventoryMovements: [],
     tables: [
-      { id: '1', area: 'A', seats: 2, status: 'available', enabled: true, token: 'A1DEMO01' },
-      { id: '2', area: 'A', seats: 4, status: 'available', enabled: true, token: 'A2DEMO02' },
-      { id: '3', area: 'B', seats: 4, status: 'available', enabled: true, token: 'B3DEMO03' },
-      { id: '5', area: '座敷', seats: 6, status: 'available', enabled: true, token: 'Z5DEMO05' }
+      { id: '1', area: 'A', seats: 2, status: 'available', enabled: true, token: 'A1HONCHO' },
+      { id: '2', area: 'A', seats: 4, status: 'available', enabled: true, token: 'A2HONCHO' },
+      { id: '3', area: 'B', seats: 4, status: 'available', enabled: true, token: 'B3HONCHO' },
+      { id: '4', area: 'B', seats: 4, status: 'available', enabled: true, token: 'B4HONCHO' },
+      { id: '5', area: '座敷', seats: 6, status: 'available', enabled: true, token: 'Z5HONCHO' },
+      { id: '6', area: '座敷', seats: 8, status: 'available', enabled: true, token: 'Z6HONCHO' },
+      { id: '7', area: '宴会', seats: 10, status: 'available', enabled: true, token: 'P7HONCHO' }
     ],
     staff: [
       { id: 'owner', name: '店長', role: 'manager', active: true, hourlyWage: 1500 },
@@ -51,6 +130,11 @@
     auditEvents: [],
     orders: []
   };
+  seed.inventory = seed.menu.map((item) => ({
+    menuItemId: item.id,
+    stock: item.categoryId === 'course' ? 200 : 80,
+    safetyStock: item.categoryId === 'course' ? 20 : 10
+  }));
 
   function memoryStorage() {
     const data = {};
@@ -119,6 +203,8 @@
     try {
       const parsed = JSON.parse(raw);
       const normalized = {
+        restaurant: parsed.restaurant || clone(seed.restaurant),
+        settings: parsed.settings || clone(seed.settings),
         categories: parsed.categories || clone(seed.categories),
         menu: parsed.menu || clone(seed.menu),
         inventory: normalizeInventory(parsed.inventory, parsed.menu || seed.menu),
@@ -345,7 +431,7 @@
     const orderType = order.orderType || (order.tableId ? 'dine-in' : 'pickup');
     const deliveryFee = Number(order.deliveryFee || 0);
     const subtotal = Number(order.subtotal ?? order.total ?? 0) - (order.subtotal === undefined && deliveryFee ? deliveryFee : 0);
-    return {
+    const normalized = {
       ...order,
       tableId: order.tableId ? String(order.tableId) : '',
       orderType,
@@ -364,6 +450,13 @@
       deliveryFee,
       total: Number(order.total ?? subtotal + deliveryFee)
     };
+    normalized.lines = (order.lines || []).map((line, index) => ({
+      id: line.id || `${line.menuItemId || 'line'}-${order.id || 'order'}-${index}`,
+      status: line.status || (order.status === 'done' ? 'done' : 'new'),
+      ...line,
+      nameEn: line.nameEn || ''
+    }));
+    return normalized;
   }
 
   function cartKey(tableId) {
@@ -410,6 +503,11 @@
     }, 0);
   }
 
+  function availablePaymentMethods(store = loadStore()) {
+    const methods = store.settings?.paymentMethods || seed.settings.paymentMethods;
+    return methods.filter((method) => method.enabled);
+  }
+
   function orderTypeTextForAudit(orderType) {
     if (orderType === 'pickup') return 'Pickup';
     if (orderType === 'delivery') return 'Delivery';
@@ -427,17 +525,20 @@
     if (!cart || cart.length === 0) throw new Error('Cart is empty');
     const normalizedOrderType = orderType || (tableId ? 'dine-in' : 'pickup');
     const normalizedDeliveryFee = Number(deliveryFee || 0);
-    const lines = cart.map((line) => {
+    const lines = cart.map((line, index) => {
       const item = store.menu.find((entry) => entry.id === line.menuItemId);
       const inventoryItem = store.inventory.find((entry) => entry.menuItemId === line.menuItemId);
       const quantity = Number(line.quantity || 0);
       if (!item || item.soldOut || quantity <= 0 || (inventoryItem && inventoryItem.stock < quantity)) throw new Error('Menu item unavailable');
       return {
+        id: `${item.id}-${Date.now()}-${index}`,
         menuItemId: item.id,
         nameJa: item.nameJa,
         nameZh: item.nameZh,
+        nameEn: item.nameEn || '',
         price: item.price,
         quantity,
+        status: 'new',
         note: line.note || ''
       };
     });
@@ -511,6 +612,36 @@
     saveStore(store);
   }
 
+  function cancelOrder(orderId, reason = '') {
+    const store = loadStore();
+    const order = store.orders.find((entry) => entry.id === orderId);
+    if (!order || order.paymentStatus === 'paid') return null;
+    store.orders = store.orders.map((entry) => entry.id === orderId ? {
+      ...entry,
+      status: 'canceled',
+      paymentStatus: 'canceled',
+      cancelReason: reason,
+      canceledAt: new Date().toISOString(),
+      lines: entry.lines.map((line) => ({ ...line, status: 'canceled' }))
+    } : entry);
+    if (order.tableId) {
+      const hasRemaining = store.orders.some((entry) => entry.id !== orderId && entry.tableId === order.tableId && entry.paymentStatus !== 'paid' && entry.paymentStatus !== 'canceled');
+      if (!hasRemaining) store.tables = store.tables.map((table) => table.id === order.tableId ? resetTableState(table) : table);
+    }
+    addAuditEvent(store, {
+      module: 'order',
+      action: 'cancel_order',
+      actor: '店长',
+      target: orderId,
+      summary: `${orderLabelForAudit(order)} canceled`,
+      amount: order.total,
+      quantity: order.lines.reduce((sum, line) => sum + line.quantity, 0),
+      meta: { reason }
+    });
+    saveStore(store);
+    return store.orders.find((entry) => entry.id === orderId);
+  }
+
   function tableOpenSummary(tableId) {
     const orders = loadStore().orders.filter((order) => (
       order.tableId === String(tableId) && order.paymentStatus !== 'paid'
@@ -525,7 +656,7 @@
   function kitchenOrderGroups() {
     const groups = { new: [], preparing: [], done: [] };
     loadStore().orders
-      .filter((order) => order.paymentStatus !== 'paid')
+      .filter((order) => order.paymentStatus !== 'paid' && order.paymentStatus !== 'canceled')
       .forEach((order) => {
         const status = groups[order.status] ? order.status : 'new';
         groups[status].push(order);
@@ -533,17 +664,74 @@
     return groups;
   }
 
+  function kitchenUrgency(minutes) {
+    if (minutes >= 10) return 'urgent';
+    if (minutes >= 5) return 'warning';
+    return 'normal';
+  }
+
+  function kitchenQueueItems(now = new Date()) {
+    const current = new Date(now).getTime();
+    return loadStore().orders
+      .filter((order) => order.paymentStatus !== 'paid' && order.paymentStatus !== 'canceled')
+      .flatMap((order) => order.lines
+        .filter((line) => line.status !== 'done' && line.status !== 'canceled')
+        .map((line) => {
+          const minutes = Math.max(0, Math.floor((current - new Date(order.createdAt).getTime()) / 60000));
+          return {
+            orderId: order.id,
+            tableId: order.tableId,
+            orderType: order.orderType,
+            customer: order.customer,
+            fulfillment: order.fulfillment,
+            createdAt: order.createdAt,
+            minutes,
+            waitMinutes: minutes,
+            urgency: kitchenUrgency(minutes),
+            ...line,
+            line
+          };
+        }))
+      .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+  }
+
+  function updateOrderLineStatus(orderId, lineId, status) {
+    const store = loadStore();
+    const order = store.orders.find((entry) => entry.id === orderId);
+    if (!order) return null;
+    let updatedLine = null;
+    const updatedLines = order.lines.map((line) => {
+      if (line.id !== lineId) return line;
+      updatedLine = { ...line, status };
+      return updatedLine;
+    });
+    const orderStatus = updatedLines.every((line) => line.status === 'done') ? 'done' : 'preparing';
+    store.orders = store.orders.map((entry) => entry.id === orderId ? { ...entry, lines: updatedLines, status: orderStatus } : entry);
+    addAuditEvent(store, {
+      module: 'kitchen',
+      action: 'update_order_line_status',
+      actor: '厨房',
+      target: `${orderId}/${lineId}`,
+      summary: `${orderLabelForAudit(order)} line -> ${status}`,
+      meta: { status }
+    });
+    saveStore(store);
+    return updatedLine;
+  }
+
   function checkoutTable(tableId, payment) {
     const store = loadStore();
     const paymentInfo = typeof payment === 'string' ? { method: payment } : (payment || {});
     const method = paymentInfo.method || 'cash';
-    const unpaidOrders = store.orders.filter((order) => order.tableId === String(tableId) && order.paymentStatus !== 'paid');
+    const enabledMethods = availablePaymentMethods(store).map((entry) => entry.id);
+    if (enabledMethods.length && !enabledMethods.includes(method)) throw new Error('Payment method unavailable');
+    const unpaidOrders = store.orders.filter((order) => order.tableId === String(tableId) && order.paymentStatus !== 'paid' && order.paymentStatus !== 'canceled');
     const paidTotal = unpaidOrders.reduce((sum, order) => sum + order.total, 0);
     const hasReceived = paymentInfo.receivedAmount !== undefined && paymentInfo.receivedAmount !== null && paymentInfo.receivedAmount !== '';
     const receivedAmount = hasReceived ? Number(paymentInfo.receivedAmount) : paidTotal;
     const changeAmount = Math.max(receivedAmount - paidTotal, 0);
     store.orders = store.orders.map((order) => {
-      if (order.tableId !== String(tableId) || order.paymentStatus === 'paid') return order;
+      if (order.tableId !== String(tableId) || order.paymentStatus === 'paid' || order.paymentStatus === 'canceled') return order;
       return {
         ...order,
         status: 'paid',
@@ -571,10 +759,12 @@
 
   function checkoutOrder(orderId, payment) {
     const store = loadStore();
-    const order = store.orders.find((entry) => entry.id === orderId && entry.paymentStatus !== 'paid');
+    const order = store.orders.find((entry) => entry.id === orderId && entry.paymentStatus !== 'paid' && entry.paymentStatus !== 'canceled');
     if (!order) return 0;
     const paymentInfo = typeof payment === 'string' ? { method: payment } : (payment || {});
     const method = paymentInfo.method || 'cash';
+    const enabledMethods = availablePaymentMethods(store).map((entry) => entry.id);
+    if (enabledMethods.length && !enabledMethods.includes(method)) throw new Error('Payment method unavailable');
     const hasReceived = paymentInfo.receivedAmount !== undefined && paymentInfo.receivedAmount !== null && paymentInfo.receivedAmount !== '';
     const receivedAmount = hasReceived ? Number(paymentInfo.receivedAmount) : order.total;
     const changeAmount = Math.max(receivedAmount - order.total, 0);
@@ -633,22 +823,36 @@
       const createdAt = new Date(order.createdAt);
       return createdAt >= start && createdAt < end;
     });
-    const openOrders = todayOrders.filter((order) => order.paymentStatus !== 'paid');
-    const paidOrders = todayOrders.filter((order) => order.paymentStatus === 'paid');
+    const activeOrders = todayOrders.filter((order) => order.paymentStatus !== 'canceled');
+    const canceledOrders = todayOrders.filter((order) => order.paymentStatus === 'canceled');
+    const openOrders = activeOrders.filter((order) => order.paymentStatus !== 'paid');
+    const paidOrders = activeOrders.filter((order) => order.paymentStatus === 'paid');
     const byType = { dineIn: 0, pickup: 0, delivery: 0 };
-    todayOrders.forEach((order) => {
+    activeOrders.forEach((order) => {
       if (order.orderType === 'pickup') byType.pickup += 1;
       else if (order.orderType === 'delivery') byType.delivery += 1;
       else byType.dineIn += 1;
     });
     return {
-      date: start.toISOString().slice(0, 10),
-      orderCount: todayOrders.length,
+      date: dateKey(start),
+      orderCount: activeOrders.length,
       paidCount: paidOrders.length,
       openCount: openOrders.length,
+      canceledCount: canceledOrders.length,
       salesTotal: paidOrders.reduce((sum, order) => sum + order.total, 0),
       openTotal: openOrders.reduce((sum, order) => sum + order.total, 0),
       byType
+    };
+  }
+
+  function dailySummary(now = new Date()) {
+    const overview = businessOverview(now);
+    const report = dailyReport(overview.date);
+    return {
+      ...overview,
+      paidTotal: report.salesTotal,
+      unpaidTotal: report.openTotal,
+      topItems: report.topItems
     };
   }
 
@@ -675,7 +879,7 @@
       .filter((order) => (order.paymentMethod || 'cash') === 'cash')
       .reduce((sum, order) => sum + order.total, 0);
     const openOrders = loadStore().orders.filter((order) => {
-      return order.paymentStatus !== 'paid' && dateKey(order.createdAt) === targetDate;
+      return order.paymentStatus !== 'paid' && order.paymentStatus !== 'canceled' && dateKey(order.createdAt) === targetDate;
     });
     return {
       ...overview,
@@ -917,7 +1121,11 @@
 
   function dateKey(value) {
     const date = new Date(value);
-    return date.toISOString().slice(0, 10);
+    return [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, '0'),
+      String(date.getDate()).padStart(2, '0')
+    ].join('-');
   }
 
   function minutesOfDay(isoTime) {
@@ -1180,7 +1388,12 @@
     saveStore(store);
   }
 
-  function tableOrderUrl({ origin, basePath, table }) {
+  function tableOrderUrl(input, tableId) {
+    if (typeof input === 'string') {
+      const normalized = String(input || '').replace(/\/+$/, '');
+      return `${normalized}/order/?table=${encodeURIComponent(String(tableId))}`;
+    }
+    const { origin, basePath, table } = input || {};
     const cleanBase = ('/' + (basePath || '').replace(/^\/|\/$/g, '')).replace(/^\/$/, '');
     const url = new URL(`${cleanBase}/order/`, origin);
     url.searchParams.set('table', table.id);
@@ -1406,14 +1619,20 @@
     addToCart,
     updateCartLine,
     cartTotal,
+    availablePaymentMethods,
     createOrder,
     updateOrderStatus,
+    cancelOrder,
     tableOpenSummary,
     kitchenOrderGroups,
+    kitchenUrgency,
+    kitchenQueueItems,
+    updateOrderLineStatus,
     checkoutTable,
     checkoutOrder,
     paymentHistory,
     businessOverview,
+    dailySummary,
     dailyReport,
     closeBusinessDay,
     dailyCloseHistory,

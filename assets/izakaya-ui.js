@@ -49,8 +49,37 @@
     }
   }
 
+  function currentLang() {
+    return i18n?.getLang?.() || document.documentElement.lang || 'ja';
+  }
+
   function itemName(item) {
-    return `${item.nameJa} / ${item.nameZh}`;
+    if (!item) return '';
+    const lang = currentLang();
+    if (lang === 'zh') return item.nameZh || item.nameJa || item.nameEn || '';
+    if (lang === 'en') return item.nameEn || item.nameJa || item.nameZh || '';
+    return item.nameJa || item.nameZh || item.nameEn || '';
+  }
+
+  function itemSubName(item) {
+    if (!item) return '';
+    const lang = currentLang();
+    if (lang === 'ja') return [item.nameZh, item.nameEn].filter(Boolean).join(' / ');
+    if (lang === 'zh') return [item.nameJa, item.nameEn].filter(Boolean).join(' / ');
+    return [item.nameJa, item.nameZh].filter(Boolean).join(' / ');
+  }
+
+  function categoryName(category) {
+    const lang = currentLang();
+    if (lang === 'zh') return category.nameZh || category.nameJa || category.nameEn || category.id;
+    if (lang === 'en') return category.nameEn || category.nameJa || category.nameZh || category.id;
+    return category.nameJa || category.nameZh || category.nameEn || category.id;
+  }
+
+  function renderStoreInfo(store) {
+    document.querySelectorAll('[data-store-name]').forEach((el) => { el.textContent = itemName(store.restaurant || {}); });
+    document.querySelectorAll('[data-store-address]').forEach((el) => { el.textContent = store.restaurant?.address || t('store_address'); });
+    document.querySelectorAll('[data-payment-note]').forEach((el) => { el.textContent = store.settings?.paymentNote || t('cash_notice'); });
   }
 
   function orderLabel(order) {
@@ -75,7 +104,7 @@
   function orderLinesMarkup(order) {
     return order.lines.map((line) => `
       <div class="order-line">
-        <div><strong>${line.nameJa}</strong> × ${line.quantity}${line.note ? `<div class="muted">${t('note')}: ${line.note}</div>` : ''}</div>
+        <div><strong>${itemName(line)}</strong> × ${line.quantity}${line.note ? `<div class="muted">${t('note')}: ${line.note}</div>` : ''}</div>
         <div class="price">${yen(line.price * line.quantity)}</div>
       </div>
     `).join('');
@@ -98,6 +127,7 @@
     function render() {
       i18n?.applyLang(i18n.getLang());
       const store = core.loadStore();
+      renderStoreInfo(store);
       const cart = core.loadCart(tableId);
       const isValidTable = core.validateTableAccess(tableId, getTableToken());
       const tableLabel = document.querySelector('[data-table-label]');
@@ -116,7 +146,7 @@
       }
       const categories = [{ id: 'all', nameJa: t('all'), nameZh: t('all') }, ...store.categories];
       document.querySelector('[data-categories]').innerHTML = categories.map((category) => (
-        `<button class="chip ${category.id === selectedCategory ? 'active' : ''}" data-category="${category.id}">${category.nameJa}</button>`
+        `<button class="chip ${category.id === selectedCategory ? 'active' : ''}" data-category="${category.id}">${categoryName(category)}</button>`
       )).join('');
 
       const menu = selectedCategory === 'all'
@@ -127,8 +157,8 @@
           <div class="menu-top">
             <div>
               <div class="dish-icon">${item.icon}</div>
-              <div class="dish-name">${item.nameJa}</div>
-              <div class="dish-sub">${item.nameZh}</div>
+              <div class="dish-name">${itemName(item)}</div>
+              <div class="dish-sub">${itemSubName(item)}</div>
             </div>
             <div class="price">${yen(item.price)}</div>
           </div>
@@ -260,53 +290,48 @@
   }
 
   function mountKitchen() {
-    function kitchenOrderMarkup(order) {
-      const itemCount = order.lines.reduce((sum, line) => sum + line.quantity, 0);
-      const minutes = elapsedMinutes(order.createdAt);
-      const isRush = (order.status === 'new' && minutes >= 10) || (order.status === 'preparing' && minutes >= 20);
-      const orderTypeClass = order.orderType === 'delivery' ? 'delivery' : order.orderType === 'pickup' ? 'pickup' : 'dine-in';
-      const lineNotes = order.lines.filter((line) => line.note).map((line) => `${line.nameJa}: ${line.note}`);
-      const fulfillmentNote = order.fulfillment?.note ? [order.fulfillment.note] : [];
-      const notes = [...lineNotes, ...fulfillmentNote];
+    function kitchenItemMarkup(item) {
+      const line = item.line;
+      const orderTypeClass = item.orderType === 'delivery' ? 'delivery' : item.orderType === 'pickup' ? 'pickup' : 'dine-in';
       return `
-        <article class="card order-card kitchen-ticket ${orderTypeClass} ${isRush ? 'rush' : ''}">
+        <article class="card order-card kitchen-ticket ${orderTypeClass} ${item.urgency}">
           <div class="ticket-head">
             <div>
               <div class="ticket-badges">
-                <span class="status ${order.status}">${statusText(order.status)}</span>
-                <span class="order-type ${orderTypeClass}">${orderTypeText(order.orderType)}</span>
-                ${isRush ? `<span class="rush-badge">${t('rush_order')}</span>` : ''}
+                <span class="status ${item.urgency === 'urgent' ? 'new' : item.urgency === 'warning' ? 'preparing' : 'done'}">${t('elapsed_minutes', { count: item.minutes })}</span>
+                <span class="order-type ${orderTypeClass}">${orderTypeText(item.orderType)}</span>
+                ${item.urgency !== 'normal' ? `<span class="rush-badge">${t('rush_order')}</span>` : ''}
               </div>
-              <h2>${orderLabel(order)}</h2>
+              <h2>${item.tableId ? t('order_title', { table: item.tableId }) : orderTypeText(item.orderType)}</h2>
               <div class="meta">
-                <span>${new Date(order.createdAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</span>
-                <span>${t('elapsed_minutes', { count: minutes })}</span>
-                <span>${t('item_count', { count: itemCount })}</span>
-                ${fulfillmentMeta(order) ? `<span>${fulfillmentMeta(order)}</span>` : ''}
+                <span>${new Date(item.createdAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</span>
+                ${item.customer?.name ? `<span>${item.customer.name}</span>` : ''}
+                ${item.fulfillment?.requestedAt ? `<span>${t('requested_time')}: ${item.fulfillment.requestedAt}</span>` : ''}
               </div>
             </div>
-            <div class="price">${yen(order.total)}</div>
+            <div class="ticket-age">${item.minutes}m</div>
           </div>
-          ${notes.length ? `<div class="note-alert"><strong>${t('kitchen_notes')}</strong>${notes.map((note) => `<span>${note}</span>`).join('')}</div>` : ''}
-          <div>${orderLinesMarkup(order)}</div>
+          <div class="kitchen-dish">
+            <strong>${itemName(line)}</strong>
+            <span>× ${line.quantity}</span>
+          </div>
+          ${line.note || item.fulfillment?.note ? `<div class="note-alert"><strong>${t('kitchen_notes')}</strong>${[line.note, item.fulfillment?.note].filter(Boolean).map((note) => `<span>${note}</span>`).join('')}</div>` : ''}
           <div class="btn-row">
-            ${order.status === 'new' ? `<button class="btn warn" data-status="${order.id}:preparing">${t('action_preparing')}</button>` : ''}
-            ${order.status === 'preparing' ? `<button class="btn primary" data-status="${order.id}:done">${t('action_done')}</button>` : ''}
-            ${order.status === 'done' ? `<span class="muted">${t('waiting_checkout')}</span>` : ''}
+            <button class="btn primary" data-line-done="${item.orderId}:${line.id}">${t('action_done')}</button>
           </div>
         </article>
       `;
     }
 
-    function kitchenColumn(status, orders) {
+    function kitchenColumn(status, items) {
       return `
         <section class="kitchen-column ${status}">
           <div class="section-head">
             <h2>${t(`kitchen_${status}`)}</h2>
-            <span class="status ${status}">${orders.length}</span>
+            <span class="status ${status}">${items.length}</span>
           </div>
           <div class="grid">
-            ${orders.length ? orders.map(kitchenOrderMarkup).join('') : `<div class="empty small">${t(`kitchen_empty_${status}`)}</div>`}
+            ${items.length ? items.map(kitchenItemMarkup).join('') : `<div class="empty small">${t(`kitchen_empty_${status}`)}</div>`}
           </div>
         </section>
       `;
@@ -314,12 +339,26 @@
 
     function render() {
       i18n?.applyLang(i18n.getLang());
-      const groups = core.kitchenOrderGroups();
+      renderStoreInfo(core.loadStore());
+      const queue = core.kitchenQueueItems();
+      const groups = {
+        new: queue.filter((item) => item.urgency === 'urgent'),
+        preparing: queue.filter((item) => item.urgency === 'warning'),
+        done: queue.filter((item) => item.urgency === 'normal')
+      };
       document.querySelector('[data-orders]').innerHTML = ['new', 'preparing', 'done']
         .map((status) => kitchenColumn(status, groups[status]))
         .join('');
     }
     document.addEventListener('click', async (event) => {
+      const lineAction = event.target.closest('[data-line-done]');
+      if (lineAction) {
+        const [orderId, lineId] = lineAction.dataset.lineDone.split(':');
+        core.updateOrderLineStatus(orderId, lineId, 'done');
+        notify(t('set_done'));
+        render();
+        return;
+      }
       const action = event.target.closest('[data-status]');
       if (!action) return;
       const [orderId, status] = action.dataset.status.split(':');
@@ -400,6 +439,7 @@
     function render() {
       i18n?.applyLang(i18n.getLang());
       const store = core.loadStore();
+      renderStoreInfo(store);
       const cart = core.loadCart(cartId);
       renderConfirmation();
       document.querySelectorAll('[data-fulfillment]').forEach((button) => {
@@ -409,7 +449,7 @@
       if (addressField) addressField.hidden = fulfillmentMethod !== 'delivery';
       const categories = [{ id: 'all', nameJa: t('all'), nameZh: t('all') }, ...store.categories];
       document.querySelector('[data-categories]').innerHTML = categories.map((category) => (
-        `<button class="chip ${category.id === selectedCategory ? 'active' : ''}" data-category="${category.id}">${category.nameJa}</button>`
+        `<button class="chip ${category.id === selectedCategory ? 'active' : ''}" data-category="${category.id}">${categoryName(category)}</button>`
       )).join('');
       const menu = selectedCategory === 'all'
         ? store.menu
@@ -419,8 +459,8 @@
           <div class="menu-top">
             <div>
               <div class="dish-icon">${item.icon}</div>
-              <div class="dish-name">${item.nameJa}</div>
-              <div class="dish-sub">${item.nameZh}</div>
+              <div class="dish-name">${itemName(item)}</div>
+              <div class="dish-sub">${itemSubName(item)}</div>
             </div>
             <div class="price">${yen(item.price)}</div>
           </div>
@@ -558,12 +598,12 @@
     let selectedOutsideOrderId = '';
     function selectedTableTotal() {
       return core.loadStore().orders
-        .filter((order) => order.tableId === selectedTable && order.paymentStatus !== 'paid')
+        .filter((order) => order.tableId === selectedTable && order.paymentStatus !== 'paid' && order.paymentStatus !== 'canceled')
         .reduce((sum, order) => sum + order.total, 0);
     }
     function activeCheckoutTotal() {
       if (selectedOutsideOrderId) {
-        const order = core.loadStore().orders.find((entry) => entry.id === selectedOutsideOrderId && entry.paymentStatus !== 'paid');
+        const order = core.loadStore().orders.find((entry) => entry.id === selectedOutsideOrderId && entry.paymentStatus !== 'paid' && entry.paymentStatus !== 'canceled');
         return order ? order.total : 0;
       }
       return selectedTableTotal();
@@ -590,13 +630,20 @@
     function render() {
       i18n?.applyLang(i18n.getLang());
       const store = core.loadStore();
-      const openOrders = store.orders.filter((order) => order.paymentStatus !== 'paid');
+      renderStoreInfo(store);
+      const openOrders = store.orders.filter((order) => order.paymentStatus !== 'paid' && order.paymentStatus !== 'canceled');
       const outsideOrders = openOrders.filter((order) => order.orderType !== 'dine-in');
       if (selectedOutsideOrderId && !outsideOrders.some((order) => order.id === selectedOutsideOrderId)) selectedOutsideOrderId = '';
       const payments = core.paymentHistory();
       const overview = core.businessOverview();
       const report = core.dailyReport();
       const closeHistory = core.dailyCloseHistory();
+      const paymentSelect = document.querySelector('[data-payment-method]');
+      if (paymentSelect) {
+        const currentMethod = paymentSelect.value;
+        paymentSelect.innerHTML = core.availablePaymentMethods(store).map((method) => `<option value="${method.id}">${method[`name${currentLang() === 'zh' ? 'Zh' : currentLang() === 'en' ? 'En' : 'Ja'}`] || paymentText(method.id)}</option>`).join('');
+        if (currentMethod && Array.from(paymentSelect.options).some((option) => option.value === currentMethod)) paymentSelect.value = currentMethod;
+      }
       document.querySelector('[data-business-date]').textContent = overview.date;
       document.querySelector('[data-today-orders]').textContent = overview.orderCount;
       document.querySelector('[data-today-sales]').textContent = yen(overview.salesTotal);
@@ -707,8 +754,8 @@
         }
         const storeBeforePayment = core.loadStore();
         const ordersToPay = selectedOutsideOrderId
-          ? storeBeforePayment.orders.filter((entry) => entry.id === selectedOutsideOrderId && entry.paymentStatus !== 'paid')
-          : storeBeforePayment.orders.filter((order) => order.tableId === selectedTable && order.paymentStatus !== 'paid');
+          ? storeBeforePayment.orders.filter((entry) => entry.id === selectedOutsideOrderId && entry.paymentStatus !== 'paid' && entry.paymentStatus !== 'canceled')
+          : storeBeforePayment.orders.filter((order) => order.tableId === selectedTable && order.paymentStatus !== 'paid' && order.paymentStatus !== 'canceled');
         const orderIdsToPay = ordersToPay.map((order) => order.id);
         const total = selectedOutsideOrderId
           ? core.checkoutOrder(selectedOutsideOrderId, { method, receivedAmount })
@@ -791,6 +838,7 @@
     function render() {
       i18n?.applyLang(i18n.getLang());
       const store = core.loadStore();
+      renderStoreInfo(store);
       const inventory = core.inventoryStatus();
       const report = core.dailyReport();
       const labor = core.laborSummary();
@@ -823,7 +871,7 @@
           </div>
         </div>
       `).join('');
-      document.querySelector('[name="categoryId"]').innerHTML = store.categories.map((category) => `<option value="${category.id}">${category.nameJa} / ${category.nameZh}</option>`).join('');
+      document.querySelector('[name="categoryId"]').innerHTML = store.categories.map((category) => `<option value="${category.id}">${categoryName(category)}</option>`).join('');
       document.querySelector('[data-admin-tables]').innerHTML = store.tables.map((table) => `<div class="table-line"><strong>${table.area}-${table.id}</strong><span>${table.seats}${t('seats')} · ${table.enabled ? table.status : t('disable_table')}</span></div>`).join('');
       document.querySelector('[data-low-stock-count]').textContent = `${t('low_stock')} ${inventory.lowStock.length}`;
       document.querySelector('[data-inventory-form] [name="menuItemId"]').innerHTML = store.menu.map((item) => `<option value="${item.id}">${itemName(item)}</option>`).join('');
@@ -858,6 +906,15 @@
       document.querySelector('[data-report-orders]').textContent = report.orderCount;
       document.querySelector('[data-report-sales]').textContent = yen(report.salesTotal);
       document.querySelector('[data-report-open]').textContent = yen(report.openTotal);
+      const salesSummary = document.querySelector('[data-sales-summary]');
+      if (salesSummary) {
+        salesSummary.innerHTML = `
+          <div class="metric"><span>${t('paid_total')}</span><strong>${yen(report.salesTotal)}</strong></div>
+          <div class="metric"><span>${t('unpaid_total')}</span><strong>${yen(report.openTotal)}</strong></div>
+          <div class="metric"><span>${t('order_count')}</span><strong>${report.orderCount}</strong></div>
+          <div class="metric"><span>${t('canceled_count')}</span><strong>${report.canceledCount || 0}</strong></div>
+        `;
+      }
       document.querySelector('[data-top-items]').innerHTML = report.topItems.length ? report.topItems.slice(0, 5).map((item) => `
         <div class="table-line"><strong>${item.nameJa}</strong><span>${item.quantity} · ${yen(item.total)}</span></div>
       `).join('') : `<div class="empty small">${t('payment_history_empty')}</div>`;
@@ -1060,6 +1117,7 @@
         icon: form.get('icon') || '🍽️',
         nameJa: form.get('nameJa'),
         nameZh: form.get('nameZh'),
+        nameEn: form.get('nameEn') || form.get('nameJa'),
         price: Number(form.get('price')),
         desc: form.get('desc'),
         recommended: form.get('recommended') === 'on',
