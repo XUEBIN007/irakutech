@@ -33,6 +33,18 @@ assert.ok(store.menu.some((item) => item.id === 'spicy-miso-ramen' && item.price
 assert.ok(store.menu.some((item) => item.id === 'sweet-sour-pork' && item.recommended));
 assert.ok(store.tables.some((table) => table.id === '6' && table.area === '座敷'));
 
+const session = core.startTableSession('3', { guestCount: 4, note: '窓側希望', source: 'customer' });
+assert.strictEqual(session.id, '3');
+assert.strictEqual(session.status, 'occupied');
+assert.strictEqual(session.guestCount, 4);
+assert.strictEqual(session.note, '窓側希望');
+assert.ok(session.openedAt);
+let tableEvents = core.loadStore().tableEvents;
+assert.strictEqual(tableEvents[0].type, 'open');
+assert.strictEqual(tableEvents[0].tableId, '3');
+assert.strictEqual(tableEvents[0].source, 'customer');
+assert.strictEqual(tableEvents[0].guestCount, 4);
+
 core.addToCart('3', 'banshaku-set');
 core.addToCart('3', 'banshaku-set');
 core.updateCartLine('3', 'banshaku-set', { note: '生ビールで' });

@@ -63,6 +63,8 @@ assert.match(terms, /利用規約/);
 assert.match(read('admin/index.html'), /data-audit-log/);
 assert.match(read('admin/index.html'), /data-manager-alerts/);
 assert.match(read('admin/index.html'), /data-coverage-alerts/);
+assert.match(read('order/index.html'), /data-seat-panel/);
+assert.match(read('order/index.html'), /data-start-table/);
 
 const checklist = read('docs/public-launch-checklist.md');
 assert.match(checklist, /公開前チェックリスト/);

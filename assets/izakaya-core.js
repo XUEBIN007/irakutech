@@ -265,6 +265,7 @@
       toTableId: event.toTableId ? String(event.toTableId) : '',
       guestCount: Number(event.guestCount || 0),
       note: event.note || '',
+      source: event.source || 'staff',
       createdAt: event.createdAt || new Date().toISOString()
     };
   }
@@ -1417,24 +1418,35 @@
   function openTable(tableId, details = {}) {
     const store = loadStore();
     requireTable(store, tableId);
+    const openedAt = new Date().toISOString();
     store.tables = store.tables.map((table) => table.id === String(tableId) ? {
       ...table,
       status: 'occupied',
       guestCount: Number(details.guestCount || table.guestCount || 0),
-      openedAt: table.openedAt || new Date().toISOString(),
+      openedAt: table.openedAt || openedAt,
       note: details.note ?? table.note ?? ''
     } : table);
-    addTableEvent(store, { type: 'open', tableId, guestCount: Number(details.guestCount || 0), note: details.note || '' });
+    addTableEvent(store, { type: 'open', tableId, guestCount: Number(details.guestCount || 0), note: details.note || '', source: details.source || 'staff' });
     addAuditEvent(store, {
       module: 'table',
       action: 'open_table',
-      actor: '会计',
+      actor: details.source === 'customer' ? '顾客' : '会计',
       target: tableId,
       summary: `Open table ${tableId}`,
       quantity: Number(details.guestCount || 0),
-      meta: { note: details.note || '' }
+      meta: { note: details.note || '', source: details.source || 'staff' }
     });
     saveStore(store);
+  }
+
+  function startTableSession(tableId, details = {}) {
+    const guestCount = Math.max(1, Number(details.guestCount || 1));
+    openTable(tableId, {
+      guestCount,
+      note: details.note || '',
+      source: details.source || 'customer'
+    });
+    return loadStore().tables.find((table) => table.id === String(tableId)) || null;
   }
 
   function resetTableState(table, note = '') {
@@ -1648,6 +1660,7 @@
     regenerateTableToken,
     tableOrderUrl,
     validateTableAccess,
+    startTableSession,
     openTable,
     transferTable,
     mergeTables,

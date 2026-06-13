@@ -130,6 +130,9 @@
       renderStoreInfo(store);
       const cart = core.loadCart(tableId);
       const isValidTable = core.validateTableAccess(tableId, getTableToken());
+      const summary = core.tableOpenSummary(tableId);
+      const table = store.tables.find((entry) => entry.id === String(tableId));
+      const sessionOpen = table?.status === 'occupied' || summary.orders.length > 0;
       const tableLabel = document.querySelector('[data-table-label]');
       if (tableLabel) tableLabel.textContent = t('order_title', { table: tableId });
       if (!isValidTable) {
@@ -143,6 +146,13 @@
         document.querySelector('[data-open-orders]').innerHTML = `<div class="empty small">${t('ordered_empty')}</div>`;
         document.querySelector('[data-open-total]').textContent = yen(0);
         return;
+      }
+      const seatPanel = document.querySelector('[data-seat-panel]');
+      const seatStatus = document.querySelector('[data-seat-status]');
+      if (seatPanel) seatPanel.hidden = sessionOpen;
+      if (seatStatus) {
+        seatStatus.hidden = !sessionOpen;
+        seatStatus.textContent = sessionOpen ? t('seat_started', { table: tableId, count: table?.guestCount || 1 }) : '';
       }
       const categories = [{ id: 'all', nameJa: t('all'), nameZh: t('all') }, ...store.categories];
       document.querySelector('[data-categories]').innerHTML = categories.map((category) => (
@@ -163,7 +173,7 @@
             <div class="price">${yen(item.price)}</div>
           </div>
           <div class="dish-desc">${item.desc}${item.recommended ? ` · ${t('recommended')}` : ''}</div>
-          <button class="btn primary" data-add="${item.id}" ${item.soldOut ? 'disabled' : ''}>${item.soldOut ? t('soldout') : t('add')}</button>
+          <button class="btn primary" data-add="${item.id}" ${item.soldOut || !sessionOpen ? 'disabled' : ''}>${item.soldOut ? t('soldout') : sessionOpen ? t('add') : t('seat_required')}</button>
         </article>
       `).join('');
 
@@ -189,10 +199,9 @@
       document.querySelector('[data-cart]').innerHTML = `${submitError ? `<div class="empty small">${submitError}</div>` : ''}${cartMarkup}`;
       document.querySelector('[data-total]').textContent = yen(core.cartTotal(cart, store.menu));
       const submitButton = document.querySelector('[data-submit]');
-      submitButton.disabled = isSubmitting;
-      submitButton.textContent = isSubmitting ? t('order_submitting') : cart.length ? t('order_submit') : t('add_items_first');
+      submitButton.disabled = isSubmitting || !sessionOpen;
+      submitButton.textContent = !sessionOpen ? t('seat_required') : isSubmitting ? t('order_submitting') : cart.length ? t('order_submit') : t('add_items_first');
       submitButton.title = cart.length ? t('order_submit') : t('cart_empty');
-      const summary = core.tableOpenSummary(tableId);
       document.querySelector('[data-order-count]').textContent = t('open_order_count', { count: summary.orders.length });
       document.querySelector('[data-open-orders]').innerHTML = summary.orders.length ? summary.orders.map((order) => `
         <article class="mini-order">
@@ -216,7 +225,27 @@
       const add = event.target.closest('[data-add]');
       if (add) {
         submitError = '';
+        const table = core.loadStore().tables.find((entry) => entry.id === String(tableId));
+        const hasOpenOrders = core.tableOpenSummary(tableId).orders.length > 0;
+        if (table?.status !== 'occupied' && !hasOpenOrders) {
+          notify(t('seat_required'));
+          render();
+          return;
+        }
         core.addToCart(tableId, add.dataset.add);
+        render();
+      }
+      const startTable = event.target.closest('[data-start-table]');
+      if (startTable) {
+        const guestInput = document.querySelector('[data-guest-count]');
+        const noteInput = document.querySelector('[data-seat-note]');
+        const guestCount = Math.max(1, Number(guestInput?.value || 1));
+        core.startTableSession(tableId, {
+          guestCount,
+          note: noteInput?.value || '',
+          source: 'customer'
+        });
+        notify(t('seat_started', { table: tableId, count: guestCount }));
         render();
       }
       const inc = event.target.closest('[data-inc]');

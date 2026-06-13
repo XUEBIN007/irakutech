@@ -42,6 +42,22 @@
         </div>
         <a class="app-link" href="../kitchen/" data-i18n="order_to_kitchen">厨房で確認 →</a>
       </div>
+      <section class="card seat-panel" data-seat-panel>
+        <div>
+          <h2 data-i18n="seat_start_title">ご来店ありがとうございます</h2>
+          <p class="muted" data-i18n="seat_start_desc">人数を入力してから注文を開始してください。店内スタッフ側にもこのテーブルが利用中として表示されます。</p>
+        </div>
+        <label class="field compact-field">
+          <span data-i18n="guest_count">人数</span>
+          <input data-guest-count type="number" min="1" max="20" value="2" inputmode="numeric">
+        </label>
+        <label class="field compact-field">
+          <span data-i18n="table_note">テーブルメモ</span>
+          <input data-seat-note placeholder="例: ベビーカーあり">
+        </label>
+        <button class="btn primary" data-start-table data-i18n="seat_start_action">注文を開始</button>
+      </section>
+      <div class="seat-status" data-seat-status hidden></div>
       <div class="grid layout-two">
         <section>
           <div class="category-bar" data-categories></div>
