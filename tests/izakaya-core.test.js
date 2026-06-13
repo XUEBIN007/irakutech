@@ -15,16 +15,33 @@ globalThis.localStorage = (() => {
 const core = require('../assets/izakaya-core.js');
 
 localStorage.clear();
-core.loadStore();
-core.addToCart('3', 'beer');
-core.addToCart('3', 'beer');
-core.updateCartLine('3', 'beer', { note: '少泡沫' });
+const store = core.loadStore();
+
+assert.strictEqual(store.restaurant.nameJa, '本町中華食堂（仮）');
+assert.strictEqual(store.restaurant.shortName, '本町中華');
+assert.strictEqual(store.restaurant.phone, '店頭確認');
+assert.strictEqual(store.settings.defaultPaymentMethod, 'cash');
+assert.strictEqual(store.settings.cashFirst, true);
+assert.deepStrictEqual(core.availablePaymentMethods(store).map((method) => method.id), ['cash']);
+assert.strictEqual(core.tableOrderUrl('https://nanakaori.com', '座敷-6'), 'https://nanakaori.com/order/?table=%E5%BA%A7%E6%95%B7-6');
+assert.ok(store.categories.some((category) => category.id === 'course' && category.nameJa === '食べ飲み放題'));
+assert.ok(store.categories.some((category) => category.id === 'banquet' && category.nameJa === '晩酌セット'));
+assert.ok(store.menu.length >= 40);
+assert.ok(store.menu.some((item) => item.id === 'tabe-nomi-3500' && item.price === 3500 && item.categoryId === 'course'));
+assert.ok(store.menu.some((item) => item.id === 'banshaku-set' && item.price === 680 && item.categoryId === 'banquet'));
+assert.ok(store.menu.some((item) => item.id === 'spicy-miso-ramen' && item.price === 790 && item.categoryId === 'noodle'));
+assert.ok(store.menu.some((item) => item.id === 'sweet-sour-pork' && item.recommended));
+assert.ok(store.tables.some((table) => table.id === '6' && table.area === '座敷'));
+
+core.addToCart('3', 'banshaku-set');
+core.addToCart('3', 'banshaku-set');
+core.updateCartLine('3', 'banshaku-set', { note: '生ビールで' });
 
 const order = core.createOrder({ tableId: '3', cart: core.loadCart('3') });
 assert.strictEqual(order.tableId, '3');
 assert.strictEqual(order.lines[0].quantity, 2);
-assert.strictEqual(order.lines[0].note, '少泡沫');
-assert.strictEqual(order.total, 960);
+assert.strictEqual(order.lines[0].note, '生ビールで');
+assert.strictEqual(order.total, 1360);
 assert.strictEqual(core.loadCart('3').length, 0);
 assert.strictEqual(core.loadStore().tables.find((table) => table.id === '3').status, 'occupied');
 
@@ -32,11 +49,53 @@ core.updateOrderStatus(order.id, 'done');
 assert.strictEqual(core.loadStore().orders[0].status, 'done');
 
 const paidTotal = core.checkoutTable('3', 'cash');
-assert.strictEqual(paidTotal, 960);
+assert.strictEqual(paidTotal, 1360);
 assert.strictEqual(core.loadStore().orders[0].paymentStatus, 'paid');
 assert.strictEqual(core.loadStore().tables.find((table) => table.id === '3').status, 'available');
 
-core.toggleSoldOut('beer');
-assert.strictEqual(core.loadStore().menu.find((item) => item.id === 'beer').soldOut, true);
+core.toggleSoldOut('banshaku-set');
+assert.strictEqual(core.loadStore().menu.find((item) => item.id === 'banshaku-set').soldOut, true);
+
+const secondCart = core.saveCart('4', [{ menuItemId: 'mapo-tofu', quantity: 1, note: '辛さ普通' }]);
+const secondOrder = core.createOrder({ tableId: '4', cart: secondCart });
+const canceled = core.cancelOrder(secondOrder.id, '客人取消');
+assert.strictEqual(canceled.status, 'canceled');
+assert.strictEqual(canceled.cancelReason, '客人取消');
+assert.strictEqual(core.loadStore().tables.find((table) => table.id === '4').status, 'available');
+
+const summary = core.dailySummary();
+assert.strictEqual(summary.orderCount, 1);
+assert.strictEqual(summary.paidTotal, 1360);
+assert.strictEqual(summary.unpaidTotal, 0);
+assert.ok(summary.topItems.some((item) => item.nameJa === '晩酌セット' && item.quantity === 2));
+
+const kdsCart = core.saveCart('5', [
+  { menuItemId: 'mapo-tofu', quantity: 1, note: '辛さ控えめ' },
+  { menuItemId: 'grilled-gyoza', quantity: 2, note: '' }
+]);
+const kdsOrder = core.createOrder({ tableId: '5', cart: kdsCart });
+assert.strictEqual(kdsOrder.lines[0].status, 'new');
+assert.ok(kdsOrder.lines[0].id);
+assert.strictEqual(core.kitchenQueueItems().length, 2);
+const doneLine = core.updateOrderLineStatus(kdsOrder.id, kdsOrder.lines[0].id, 'done');
+assert.strictEqual(doneLine.status, 'done');
+assert.strictEqual(core.kitchenQueueItems().length, 1);
+assert.strictEqual(core.kitchenQueueItems()[0].nameJa, '焼き餃子（6ヶ）');
+core.updateOrderLineStatus(kdsOrder.id, kdsOrder.lines[1].id, 'done');
+assert.strictEqual(core.loadStore().orders.find((entry) => entry.id === kdsOrder.id).status, 'done');
+
+const agingCart = core.saveCart('6', [{ menuItemId: 'yu-lin-chi', quantity: 1, note: '' }]);
+const agingOrder = core.createOrder({ tableId: '6', cart: agingCart });
+const agingStore = core.loadStore();
+agingStore.orders = agingStore.orders.map((entry) => (
+  entry.id === agingOrder.id
+    ? { ...entry, createdAt: '2026-06-13T12:00:00.000Z' }
+    : entry
+));
+core.saveStore(agingStore);
+assert.strictEqual(core.kitchenQueueItems(new Date('2026-06-13T12:04:59.000Z'))[0].urgency, 'normal');
+assert.strictEqual(core.kitchenQueueItems(new Date('2026-06-13T12:05:00.000Z'))[0].urgency, 'warning');
+assert.strictEqual(core.kitchenQueueItems(new Date('2026-06-13T12:10:00.000Z'))[0].urgency, 'urgent');
+assert.strictEqual(core.kitchenQueueItems(new Date('2026-06-13T12:10:00.000Z'))[0].waitMinutes, 10);
 
 console.log('izakaya core tests passed');

@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>会計 | 居楽テック</title>
-  <link rel="stylesheet" href="../assets/izakaya-app.css">
+  <title>会計 | 本町中華 QR注文</title>
+  <link rel="stylesheet" href="../assets/izakaya-app.css?v=20260613-timeout">
 </head>
 <body data-view="checkout">
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="../">居楽テック</a>
+      <a class="brand" href="../" data-i18n="brand">本町中華 QR注文</a>
       <div class="topbar-right">
         <nav class="nav">
           <a href="../order/?table=3" data-i18n="nav_order">注文</a>
@@ -32,6 +32,7 @@
           <p class="muted" data-i18n="checkout_desc">未会計の注文をテーブルごとにまとめて精算します。</p>
         </div>
       </div>
+      <div class="store-strip" data-store-info></div>
       <div class="grid layout-two">
         <section>
           <div class="tabs" data-tables></div>
@@ -47,14 +48,15 @@
               <option value="qr" data-i18n="pay_qr">QR決済</option>
             </select>
           </label>
+          <p class="payment-note" data-payment-note data-i18n="cash_notice">公開情報では現金中心です。正式導入前に店頭で確認してください。</p>
           <div class="summary"><span data-i18n="checkout_total">請求金額</span><span data-checkout-total>¥0</span></div>
           <button class="btn primary" data-pay style="width:100%;margin-top:14px" data-i18n="checkout_submit">会計完了・清台</button>
         </aside>
       </div>
     </main>
   </div>
-  <script src="../assets/izakaya-core.js"></script>
-  <script src="../assets/izakaya-i18n.js"></script>
-  <script src="../assets/izakaya-ui.js"></script>
+  <script src="../assets/izakaya-core.js?v=20260613-timeout"></script>
+  <script src="../assets/izakaya-i18n.js?v=20260613-timeout"></script>
+  <script src="../assets/izakaya-ui.js?v=20260613-timeout"></script>
 </body>
 </html>
