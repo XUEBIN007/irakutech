@@ -214,6 +214,12 @@
         </article>
       `).join('') : `<div class="empty small">${t('ordered_empty')}</div>`;
       document.querySelector('[data-open-total]').textContent = yen(summary.total);
+      const checkoutButton = document.querySelector('[data-request-checkout]');
+      if (checkoutButton) {
+        const alreadyRequested = Boolean(table?.checkoutRequestedAt);
+        checkoutButton.disabled = summary.total <= 0 || alreadyRequested;
+        checkoutButton.textContent = alreadyRequested ? t('checkout_requested') : t('checkout_request_action');
+      }
     }
 
     document.addEventListener('click', async (event) => {
@@ -246,6 +252,22 @@
           source: 'customer'
         });
         notify(t('seat_started', { table: tableId, count: guestCount }));
+        render();
+      }
+      const requestCheckout = event.target.closest('[data-request-checkout]');
+      if (requestCheckout) {
+        const noteInput = document.querySelector('[data-checkout-note]');
+        const summary = core.tableOpenSummary(tableId);
+        if (summary.total <= 0) {
+          notify(t('checkout_empty'));
+          render();
+          return;
+        }
+        core.requestCheckout(tableId, {
+          note: noteInput?.value || '',
+          source: 'customer'
+        });
+        notify(t('checkout_request_sent'));
         render();
       }
       const inc = event.target.closest('[data-inc]');
@@ -656,6 +678,13 @@
       output.textContent = yen(difference);
       output.classList.toggle('danger-text', difference < 0);
     }
+    function tableEventLabel(type) {
+      if (type === 'open') return t('open_table');
+      if (type === 'transfer') return t('transfer_table');
+      if (type === 'merge') return t('merge_table');
+      if (type === 'checkout_request') return t('checkout_requested');
+      return t('clear_table');
+    }
     function render() {
       i18n?.applyLang(i18n.getLang());
       const store = core.loadStore();
@@ -693,7 +722,7 @@
       document.querySelector('[data-table-events]').innerHTML = store.tableEvents.slice(0, 6).map((event) => `
         <div class="table-line">
           <div>
-            <strong>${t(event.type === 'open' ? 'open_table' : event.type === 'transfer' ? 'transfer_table' : event.type === 'merge' ? 'merge_table' : 'clear_table')}</strong>
+            <strong>${tableEventLabel(event.type)}</strong>
             <div class="muted">${event.fromTableId ? `${event.fromTableId} → ${event.toTableId}` : event.tableId}${event.note ? ` · ${event.note}` : ''}</div>
           </div>
           <span class="muted">${new Date(event.createdAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</span>

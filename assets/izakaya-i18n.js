@@ -20,6 +20,7 @@
       kitchen_new: '新規注文', kitchen_preparing: '調理中', kitchen_done: '完成', kitchen_empty_new: '新しい注文はありません。', kitchen_empty_preparing: '調理中の注文はありません。', kitchen_empty_done: '完成済みの注文はありません。', item_count: '{count}品', elapsed_minutes: '{count}分経過', rush_order: '優先確認', kitchen_notes: '注意事項', waiting_checkout: '会計待ち',
       status_new: '新規', status_preparing: '調理中', status_done: '完成', status_paid: '会計済', status_canceled: 'キャンセル', action_preparing: '調理中', action_done: '完成', action_cancel: '取消', set_preparing: '調理中にしました', set_done: '完成にしました', set_canceled: '取消しました',
       checkout_eyebrow: 'Checkout', checkout_title: 'テーブル会計', checkout_desc: '未会計の注文をテーブルごとにまとめて精算します。', checkout_panel: '会計', payment_method: '支払い方法',
+      checkout_request_action: '結帳をお願いします', checkout_request_note: '会計メモ', checkout_request_sent: '会計リクエストを送信しました', checkout_requested: '会計依頼中',
       pay_cash: '現金', pay_paypay: 'PayPay', pay_linepay: 'LINE Pay', pay_wechatpay: 'WeChat Pay', pay_alipay: 'Alipay', pay_card: 'クレジットカード', pay_qr: 'その他QR決済', checkout_total: '請求金額', received_amount: 'お預かり', change_amount: 'お釣り', short_amount: 'お預かり金額が不足しています', business_overview: '今日の営業概況', today_orders: '今日の注文', today_sales: '今日の売上', open_amount: '未会計金額', order_mix: '注文内訳', outside_checkout: 'テイクアウト・デリバリー未会計', outside_checkout_empty: '未会計の店外注文はありません。', select_for_payment: 'この注文を会計', checkout_hint_table: 'テーブル会計は左のテーブルを選びます。', checkout_hint_outside: '店外注文を選択中です。この注文だけを会計します。', checkout_no_due: '現在、会計できる未会計注文がありません。金額のあるテーブル、または店外注文を選択してください。', payment_history: '収款記録', payment_history_empty: 'まだ会計済みの注文はありません。', payment_received: '受取', payment_change: 'お釣り', checkout_submit: '会計完了・清台', checkout_empty: 'このテーブルに未会計の注文はありません。', checkout_done: '会計完了', available: '空席',
       daily_close: '日締め', cash_expected: '現金予定', cash_actual: '現金実額', cash_difference: '現金差額', close_business_day: '日締め保存', close_note: '日締めメモ', close_saved: '日締めを保存しました', close_history: '日締め履歴', unpaid_warning: '未会計があります',
       table_operations: 'テーブル操作', open_table: '開台', transfer_table: '席移動', merge_table: 'テーブル結合', clear_table: '清台', from_table: '移動元', to_table: '移動先', guest_count: '人数', table_note: 'テーブルメモ', table_operation_done: 'テーブル操作を保存しました',
@@ -41,6 +42,7 @@
       ,invalid_table: 'このQRコードは現在利用できません。スタッフにお声がけください。'
       ,audit_log: '操作ログ', audit_empty: '操作履歴はまだありません。'
       ,manager_alerts: '店長アラート', manager_alerts_empty: '確認が必要な項目はありません。', alert_unpaid_orders: '未会計があります', alert_low_stock: '低在庫があります', alert_cash_difference: '現金差額があります', alert_staff_on_duty: '勤務中スタッフ'
+      ,alert_checkout_requested: '会計依頼があります'
       ,demo_notice: '公開 demo です。入力データはブラウザ内に保存されます。実在する個人情報・決済情報は入力しないでください。'
     },
     zh: {
@@ -57,6 +59,7 @@
       kitchen_new: '新订单', kitchen_preparing: '制作中', kitchen_done: '已完成', kitchen_empty_new: '暂无新订单。', kitchen_empty_preparing: '暂无制作中订单。', kitchen_empty_done: '暂无已完成订单。', item_count: '{count}件', elapsed_minutes: '已等待 {count} 分钟', rush_order: '优先确认', kitchen_notes: '注意事项', waiting_checkout: '等待结账',
       status_new: '新订单', status_preparing: '制作中', status_done: '已完成', status_paid: '已结账', status_canceled: '已取消', action_preparing: '制作中', action_done: '完成', action_cancel: '取消', set_preparing: '已设为制作中', set_done: '已设为完成', set_canceled: '已取消',
       checkout_eyebrow: '收银结账', checkout_title: '桌台结账', checkout_desc: '按桌汇总未结账订单并完成清台。', checkout_panel: '结账', payment_method: '支付方式',
+      checkout_request_action: '呼叫结账', checkout_request_note: '结账备注', checkout_request_sent: '已通知店员结账', checkout_requested: '已请求结账',
       pay_cash: '现金', pay_paypay: 'PayPay', pay_linepay: 'LINE Pay', pay_wechatpay: '微信支付', pay_alipay: '支付宝', pay_card: '信用卡', pay_qr: '其他 QR 支付', checkout_total: '应收金额', received_amount: '实收金额', change_amount: '找零', short_amount: '实收金额不足', business_overview: '今日营业概览', today_orders: '今日订单', today_sales: '今日销售额', open_amount: '未结账金额', order_mix: '订单内訳', outside_checkout: '外卖・自取未结账', outside_checkout_empty: '暂无未结账店外订单。', select_for_payment: '选择此订单收款', checkout_hint_table: '桌台结账时，请先选择左侧桌号。', checkout_hint_outside: '当前已选择店外订单，只会结算这一单。', checkout_no_due: '当前没有可结账的未结账订单。请选择左侧带金额的桌台，或选择店外订单。', payment_history: '收款记录', payment_history_empty: '暂无已结账订单。', payment_received: '实收', payment_change: '找零', checkout_submit: '完成结账・清台', checkout_empty: '这张桌暂无未结账订单。', checkout_done: '结账完成', available: '空桌',
       daily_close: '日结', cash_expected: '现金应收', cash_actual: '现金实盘', cash_difference: '现金差额', close_business_day: '保存日结', close_note: '日结备注', close_saved: '日结已保存', close_history: '日结记录', unpaid_warning: '还有未结账订单',
       table_operations: '桌台操作', open_table: '开台', transfer_table: '换桌', merge_table: '并桌', clear_table: '清台', from_table: '来源桌', to_table: '目标桌', guest_count: '人数', table_note: '桌台备注', table_operation_done: '桌台操作已保存',
@@ -78,6 +81,7 @@
       ,invalid_table: '这个二维码当前不可使用，请联系店员。'
       ,audit_log: '操作日志', audit_empty: '暂无操作记录。'
       ,manager_alerts: '老板提醒', manager_alerts_empty: '暂无需要处理的事项。', alert_unpaid_orders: '还有未结账订单', alert_low_stock: '存在低库存商品', alert_cash_difference: '存在现金差额', alert_staff_on_duty: '员工仍在岗'
+      ,alert_checkout_requested: '有顾客请求结账'
       ,demo_notice: '这是公开 demo，输入数据会保存在当前浏览器中。请不要填写真实个人信息或支付信息。'
     },
     en: {
@@ -94,6 +98,7 @@
       kitchen_new: 'New', kitchen_preparing: 'Preparing', kitchen_done: 'Done', kitchen_empty_new: 'No new orders.', kitchen_empty_preparing: 'No preparing orders.', kitchen_empty_done: 'No completed orders.', item_count: '{count} items', elapsed_minutes: '{count} min elapsed', rush_order: 'Priority', kitchen_notes: 'Notes', waiting_checkout: 'Waiting for checkout',
       status_new: 'New', status_preparing: 'Preparing', status_done: 'Done', status_paid: 'Paid', status_canceled: 'Canceled', action_preparing: 'Preparing', action_done: 'Done', action_cancel: 'Cancel', set_preparing: 'Marked as preparing', set_done: 'Marked as done', set_canceled: 'Canceled',
       checkout_eyebrow: 'Checkout', checkout_title: 'Table Checkout', checkout_desc: 'Review unpaid orders by table and close the table.', checkout_panel: 'Checkout', payment_method: 'Payment Method',
+      checkout_request_action: 'Request Checkout', checkout_request_note: 'Checkout Note', checkout_request_sent: 'Checkout request sent', checkout_requested: 'Checkout Requested',
       pay_cash: 'Cash', pay_paypay: 'PayPay', pay_linepay: 'LINE Pay', pay_wechatpay: 'WeChat Pay', pay_alipay: 'Alipay', pay_card: 'Card', pay_qr: 'Other QR Payment', checkout_total: 'Amount Due', received_amount: 'Received', change_amount: 'Change', short_amount: 'Received amount is short', business_overview: 'Today Overview', today_orders: 'Orders Today', today_sales: 'Sales Today', open_amount: 'Unpaid Amount', order_mix: 'Order Mix', outside_checkout: 'Takeout & Delivery Due', outside_checkout_empty: 'No unpaid outside orders.', select_for_payment: 'Select for Payment', checkout_hint_table: 'For dine-in checkout, select a table on the left.', checkout_hint_outside: 'Outside order selected. Only this order will be paid.', checkout_no_due: 'There is no unpaid order ready for checkout. Select a table with an amount, or choose an outside order.', payment_history: 'Payment History', payment_history_empty: 'No paid orders yet.', payment_received: 'Received', payment_change: 'Change', checkout_submit: 'Complete Payment', checkout_empty: 'No unpaid orders for this table.', checkout_done: 'Payment completed', available: 'Open',
       daily_close: 'Daily Close', cash_expected: 'Expected Cash', cash_actual: 'Actual Cash', cash_difference: 'Cash Difference', close_business_day: 'Save Close', close_note: 'Close Note', close_saved: 'Daily close saved', close_history: 'Close History', unpaid_warning: 'Unpaid orders remain',
       table_operations: 'Table Ops', open_table: 'Open Table', transfer_table: 'Move Table', merge_table: 'Merge Tables', clear_table: 'Clear Table', from_table: 'From', to_table: 'To', guest_count: 'Guests', table_note: 'Table Note', table_operation_done: 'Table operation saved',
@@ -115,6 +120,7 @@
       ,invalid_table: 'This QR code is not available. Please ask the staff.'
       ,audit_log: 'Audit Log', audit_empty: 'No operations yet.'
       ,manager_alerts: 'Manager Alerts', manager_alerts_empty: 'No items need attention.', alert_unpaid_orders: 'Unpaid orders remain', alert_low_stock: 'Low stock items', alert_cash_difference: 'Cash difference exists', alert_staff_on_duty: 'Staff still on duty'
+      ,alert_checkout_requested: 'Checkout requested'
       ,demo_notice: 'Public demo. Data is stored in this browser. Do not enter real personal, confidential, or payment information.'
     }
   };

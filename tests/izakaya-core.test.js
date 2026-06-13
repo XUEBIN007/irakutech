@@ -57,6 +57,16 @@ assert.strictEqual(order.total, 1360);
 assert.strictEqual(core.loadCart('3').length, 0);
 assert.strictEqual(core.loadStore().tables.find((table) => table.id === '3').status, 'occupied');
 
+const checkoutRequest = core.requestCheckout('3', { note: '現金でお願いします', source: 'customer' });
+assert.strictEqual(checkoutRequest.status, 'checkout-requested');
+assert.strictEqual(checkoutRequest.checkoutNote, '現金でお願いします');
+assert.ok(checkoutRequest.checkoutRequestedAt);
+tableEvents = core.loadStore().tableEvents;
+assert.strictEqual(tableEvents[0].type, 'checkout_request');
+assert.strictEqual(tableEvents[0].source, 'customer');
+assert.strictEqual(tableEvents[0].tableId, '3');
+assert.ok(core.managerAlerts().some((alert) => alert.type === 'checkout_requested' && alert.quantity === 1));
+
 core.updateOrderStatus(order.id, 'done');
 assert.strictEqual(core.loadStore().orders[0].status, 'done');
 
@@ -64,6 +74,7 @@ const paidTotal = core.checkoutTable('3', 'cash');
 assert.strictEqual(paidTotal, 1360);
 assert.strictEqual(core.loadStore().orders[0].paymentStatus, 'paid');
 assert.strictEqual(core.loadStore().tables.find((table) => table.id === '3').status, 'available');
+assert.strictEqual(core.loadStore().tables.find((table) => table.id === '3').checkoutRequestedAt, '');
 
 core.toggleSoldOut('banshaku-set');
 assert.strictEqual(core.loadStore().menu.find((item) => item.id === 'banshaku-set').soldOut, true);

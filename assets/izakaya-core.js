@@ -252,7 +252,9 @@
       token: table.token || randomToken(),
       guestCount: Number(table.guestCount || 0),
       openedAt: table.openedAt || '',
-      note: table.note || ''
+      note: table.note || '',
+      checkoutRequestedAt: table.checkoutRequestedAt || '',
+      checkoutNote: table.checkoutNote || ''
     }));
   }
 
@@ -743,7 +745,7 @@
         paidAt: new Date().toISOString()
       };
     });
-    store.tables = store.tables.map((table) => table.id === String(tableId) ? { ...table, status: 'available', guestCount: 0, openedAt: '' } : table);
+    store.tables = store.tables.map((table) => table.id === String(tableId) ? resetTableState(table) : table);
     if (paidTotal > 0) addAuditEvent(store, {
       module: 'checkout',
       action: 'checkout_table',
@@ -969,6 +971,14 @@
       module: 'staff',
       summary: `${labor.onDuty.length} staff on duty`,
       quantity: labor.onDuty.length
+    });
+    const checkoutRequests = store.tables.filter((table) => table.checkoutRequestedAt);
+    if (checkoutRequests.length > 0) alerts.push({
+      type: 'checkout_requested',
+      severity: 'info',
+      module: 'checkout',
+      summary: `${checkoutRequests.length} checkout requests`,
+      quantity: checkoutRequests.length
     });
     return alerts;
   }
@@ -1424,7 +1434,9 @@
       status: 'occupied',
       guestCount: Number(details.guestCount || table.guestCount || 0),
       openedAt: table.openedAt || openedAt,
-      note: details.note ?? table.note ?? ''
+      note: details.note ?? table.note ?? '',
+      checkoutRequestedAt: '',
+      checkoutNote: ''
     } : table);
     addTableEvent(store, { type: 'open', tableId, guestCount: Number(details.guestCount || 0), note: details.note || '', source: details.source || 'staff' });
     addAuditEvent(store, {
@@ -1449,8 +1461,36 @@
     return loadStore().tables.find((table) => table.id === String(tableId)) || null;
   }
 
+  function requestCheckout(tableId, details = {}) {
+    const store = loadStore();
+    requireTable(store, tableId);
+    const requestedAt = new Date().toISOString();
+    store.tables = store.tables.map((table) => table.id === String(tableId) ? {
+      ...table,
+      status: 'checkout-requested',
+      checkoutRequestedAt: requestedAt,
+      checkoutNote: details.note || ''
+    } : table);
+    addTableEvent(store, {
+      type: 'checkout_request',
+      tableId,
+      note: details.note || '',
+      source: details.source || 'customer'
+    });
+    addAuditEvent(store, {
+      module: 'checkout',
+      action: 'request_checkout',
+      actor: details.source === 'customer' ? '顾客' : '会计',
+      target: tableId,
+      summary: `Checkout requested table ${tableId}`,
+      meta: { note: details.note || '', source: details.source || 'customer' }
+    });
+    saveStore(store);
+    return loadStore().tables.find((table) => table.id === String(tableId)) || null;
+  }
+
   function resetTableState(table, note = '') {
-    return { ...table, status: 'available', guestCount: 0, openedAt: '', note };
+    return { ...table, status: 'available', guestCount: 0, openedAt: '', note, checkoutRequestedAt: '', checkoutNote: '' };
   }
 
   function transferTable(fromTableId, toTableId, details = {}) {
@@ -1661,6 +1701,7 @@
     tableOrderUrl,
     validateTableAccess,
     startTableSession,
+    requestCheckout,
     openTable,
     transferTable,
     mergeTables,
