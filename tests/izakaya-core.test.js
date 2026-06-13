@@ -99,13 +99,27 @@ const kdsCart = core.saveCart('5', [
 const kdsOrder = core.createOrder({ tableId: '5', cart: kdsCart });
 assert.strictEqual(kdsOrder.lines[0].status, 'new');
 assert.ok(kdsOrder.lines[0].id);
+let progress = core.tableOrderProgress('5');
+assert.strictEqual(progress.totalQuantity, 3);
+assert.strictEqual(progress.doneQuantity, 0);
+assert.strictEqual(progress.openQuantity, 3);
+assert.strictEqual(progress.ready, false);
 assert.strictEqual(core.kitchenQueueItems().length, 2);
 const doneLine = core.updateOrderLineStatus(kdsOrder.id, kdsOrder.lines[0].id, 'done');
 assert.strictEqual(doneLine.status, 'done');
+progress = core.tableOrderProgress('5');
+assert.strictEqual(progress.totalQuantity, 3);
+assert.strictEqual(progress.doneQuantity, 1);
+assert.strictEqual(progress.openQuantity, 2);
+assert.strictEqual(progress.ready, false);
 assert.strictEqual(core.kitchenQueueItems().length, 1);
 assert.strictEqual(core.kitchenQueueItems()[0].nameJa, '焼き餃子（6ヶ）');
 core.updateOrderLineStatus(kdsOrder.id, kdsOrder.lines[1].id, 'done');
 assert.strictEqual(core.loadStore().orders.find((entry) => entry.id === kdsOrder.id).status, 'done');
+progress = core.tableOrderProgress('5');
+assert.strictEqual(progress.doneQuantity, 3);
+assert.strictEqual(progress.openQuantity, 0);
+assert.strictEqual(progress.ready, true);
 
 const agingCart = core.saveCart('6', [{ menuItemId: 'yu-lin-chi', quantity: 1, note: '' }]);
 const agingOrder = core.createOrder({ tableId: '6', cart: agingCart });

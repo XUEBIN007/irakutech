@@ -656,6 +656,26 @@
     };
   }
 
+  function tableOrderProgress(tableId) {
+    const orders = loadStore().orders.filter((order) => (
+      order.tableId === String(tableId) && order.paymentStatus !== 'paid' && order.paymentStatus !== 'canceled'
+    ));
+    const lines = orders.flatMap((order) => order.lines);
+    const totalQuantity = lines.reduce((sum, line) => sum + Number(line.quantity || 0), 0);
+    const doneQuantity = lines
+      .filter((line) => line.status === 'done')
+      .reduce((sum, line) => sum + Number(line.quantity || 0), 0);
+    const openQuantity = Math.max(totalQuantity - doneQuantity, 0);
+    return {
+      tableId: String(tableId),
+      orderCount: orders.length,
+      totalQuantity,
+      doneQuantity,
+      openQuantity,
+      ready: totalQuantity > 0 && openQuantity === 0
+    };
+  }
+
   function kitchenOrderGroups() {
     const groups = { new: [], preparing: [], done: [] };
     loadStore().orders
@@ -1676,6 +1696,7 @@
     updateOrderStatus,
     cancelOrder,
     tableOpenSummary,
+    tableOrderProgress,
     kitchenOrderGroups,
     kitchenUrgency,
     kitchenQueueItems,

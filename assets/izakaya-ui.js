@@ -213,6 +213,18 @@
           ${orderLinesMarkup(order)}
         </article>
       `).join('') : `<div class="empty small">${t('ordered_empty')}</div>`;
+      const progress = core.tableOrderProgress(tableId);
+      const progressPercent = progress.totalQuantity ? Math.round((progress.doneQuantity / progress.totalQuantity) * 100) : 0;
+      const progressEl = document.querySelector('[data-order-progress]');
+      if (progressEl) {
+        progressEl.innerHTML = progress.totalQuantity ? `
+          <div class="progress-head">
+            <strong>${t('order_progress')}</strong>
+            <span>${progress.ready ? t('order_progress_ready') : t('order_progress_done', { done: progress.doneQuantity, total: progress.totalQuantity })}</span>
+          </div>
+          <div class="progress-track"><span style="width:${progressPercent}%"></span></div>
+        ` : '';
+      }
       document.querySelector('[data-open-total]').textContent = yen(summary.total);
       const checkoutButton = document.querySelector('[data-request-checkout]');
       if (checkoutButton) {

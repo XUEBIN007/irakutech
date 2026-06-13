@@ -818,6 +818,40 @@ button, input, select, textarea {
   border-top: 1px solid rgba(15,25,35,.1);
 }
 
+.order-progress {
+  margin-top: 12px;
+}
+
+.progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.progress-head span {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.progress-track {
+  height: 9px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #f3e7dc;
+}
+
+.progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--teal);
+}
+
 .section-head {
   display: flex;
   justify-content: space-between;
