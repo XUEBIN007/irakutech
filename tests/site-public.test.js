@@ -63,11 +63,14 @@ assert.match(terms, /利用規約/);
 assert.match(read('admin/index.html'), /data-audit-log/);
 assert.match(read('admin/index.html'), /data-manager-alerts/);
 assert.match(read('admin/index.html'), /data-coverage-alerts/);
+assert.match(read('admin/index.html'), /data-resolve-staff-call/);
 assert.match(read('order/index.html'), /data-seat-panel/);
 assert.match(read('order/index.html'), /data-start-table/);
 assert.match(read('order/index.html'), /data-request-checkout/);
 assert.match(read('order/index.html'), /data-order-progress/);
 assert.match(read('order/index.html'), /data-checkout-complete/);
+assert.match(read('order/index.html'), /data-staff-call-panel/);
+assert.match(read('order/index.html'), /data-request-staff/);
 
 const checklist = read('docs/public-launch-checklist.md');
 assert.match(checklist, /公開前チェックリスト/);

@@ -67,6 +67,19 @@ assert.strictEqual(tableEvents[0].source, 'customer');
 assert.strictEqual(tableEvents[0].tableId, '3');
 assert.ok(core.managerAlerts().some((alert) => alert.type === 'checkout_requested' && alert.quantity === 1));
 
+const staffCall = core.requestStaffCall('3', { reason: 'water', note: '水をお願いします', source: 'customer' });
+assert.strictEqual(staffCall.type, 'staff_call');
+assert.strictEqual(staffCall.tableId, '3');
+assert.strictEqual(staffCall.reason, 'water');
+assert.strictEqual(staffCall.note, '水をお願いします');
+assert.strictEqual(staffCall.resolvedAt, '');
+assert.ok(core.activeStaffCalls().some((entry) => entry.id === staffCall.id && entry.tableId === '3'));
+assert.ok(core.managerAlerts().some((alert) => alert.type === 'staff_call' && alert.quantity === 1));
+const resolvedCall = core.resolveStaffCall(staffCall.id, { source: 'staff' });
+assert.ok(resolvedCall.resolvedAt);
+assert.strictEqual(core.activeStaffCalls().some((entry) => entry.id === staffCall.id), false);
+assert.strictEqual(core.managerAlerts().some((alert) => alert.type === 'staff_call'), false);
+
 core.updateOrderStatus(order.id, 'done');
 assert.strictEqual(core.loadStore().orders[0].status, 'done');
 

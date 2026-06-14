@@ -843,6 +843,39 @@ button, input, select, textarea {
   line-height: 1.5;
 }
 
+.staff-call-panel {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) 130px minmax(160px, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 1px solid rgba(180, 35, 24, 0.18);
+  border-radius: 8px;
+  background: #fffaf4;
+}
+
+.staff-call-panel strong,
+.staff-call-panel span {
+  display: block;
+}
+
+.staff-call-panel span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.staff-call-panel select,
+.staff-call-panel input {
+  width: 100%;
+  border: 1px solid rgba(15,25,35,.14);
+  border-radius: 8px;
+  padding: 11px 12px;
+  background: #fff;
+}
+
 .progress-head {
   display: flex;
   align-items: center;
@@ -1168,6 +1201,10 @@ button, input, select, textarea {
   }
 
   .layout-two {
+    grid-template-columns: 1fr;
+  }
+
+  .staff-call-panel {
     grid-template-columns: 1fr;
   }
 
