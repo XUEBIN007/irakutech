@@ -225,6 +225,14 @@
           <div class="progress-track"><span style="width:${progressPercent}%"></span></div>
         ` : '';
       }
+      const checkoutComplete = core.tableRecentCheckout ? core.tableRecentCheckout(tableId) : null;
+      const checkoutCompleteEl = document.querySelector('[data-checkout-complete]');
+      if (checkoutCompleteEl) {
+        checkoutCompleteEl.innerHTML = !summary.orders.length && checkoutComplete?.total ? `
+          <strong>${t('checkout_complete_title')}</strong>
+          <span>${t('checkout_complete_desc', { total: yen(checkoutComplete.total) })}</span>
+        ` : '';
+      }
       document.querySelector('[data-open-total]').textContent = yen(summary.total);
       const checkoutButton = document.querySelector('[data-request-checkout]');
       if (checkoutButton) {
