@@ -268,6 +268,9 @@
       guestCount: Number(event.guestCount || 0),
       note: event.note || '',
       source: event.source || 'staff',
+      reason: event.reason || '',
+      resolvedAt: event.resolvedAt || '',
+      resolvedBy: event.resolvedBy || '',
       createdAt: event.createdAt || new Date().toISOString()
     };
   }
@@ -1018,6 +1021,15 @@
       summary: `${checkoutRequests.length} checkout requests`,
       quantity: checkoutRequests.length
     });
+    const staffCalls = activeStaffCalls();
+    if (staffCalls.length > 0) alerts.push({
+      type: 'staff_call',
+      severity: 'warning',
+      module: 'table',
+      summary: staffCalls.map((call) => `Table ${call.tableId}: ${call.note || call.reason}`).join(' / '),
+      quantity: staffCalls.length,
+      calls: staffCalls
+    });
     return alerts;
   }
 
@@ -1527,6 +1539,56 @@
     return loadStore().tables.find((table) => table.id === String(tableId)) || null;
   }
 
+  function activeStaffCalls() {
+    return loadStore().tableEvents
+      .filter((event) => event.type === 'staff_call' && !event.resolvedAt)
+      .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+  }
+
+  function requestStaffCall(tableId, details = {}) {
+    const store = loadStore();
+    requireTable(store, tableId);
+    const event = addTableEvent(store, {
+      type: 'staff_call',
+      tableId,
+      reason: details.reason || 'other',
+      note: details.note || '',
+      source: details.source || 'customer'
+    });
+    addAuditEvent(store, {
+      module: 'table',
+      action: 'request_staff_call',
+      actor: details.source === 'customer' ? '顾客' : '会计',
+      target: tableId,
+      summary: `Staff call table ${tableId}`,
+      meta: { reason: event.reason, note: event.note, source: event.source }
+    });
+    saveStore(store);
+    return event;
+  }
+
+  function resolveStaffCall(callId, details = {}) {
+    const store = loadStore();
+    let resolved = null;
+    const resolvedAt = new Date().toISOString();
+    store.tableEvents = store.tableEvents.map((event) => {
+      if (event.id !== callId || event.type !== 'staff_call') return event;
+      resolved = { ...event, resolvedAt, resolvedBy: details.source || 'staff' };
+      return resolved;
+    });
+    if (!resolved) return null;
+    addAuditEvent(store, {
+      module: 'table',
+      action: 'resolve_staff_call',
+      actor: details.source === 'customer' ? '顾客' : '店员',
+      target: resolved.tableId,
+      summary: `Staff call resolved table ${resolved.tableId}`,
+      meta: { callId, reason: resolved.reason }
+    });
+    saveStore(store);
+    return resolved;
+  }
+
   function resetTableState(table, note = '') {
     return { ...table, status: 'available', guestCount: 0, openedAt: '', note, checkoutRequestedAt: '', checkoutNote: '' };
   }
@@ -1742,6 +1804,9 @@
     validateTableAccess,
     startTableSession,
     requestCheckout,
+    activeStaffCalls,
+    requestStaffCall,
+    resolveStaffCall,
     openTable,
     transferTable,
     mergeTables,

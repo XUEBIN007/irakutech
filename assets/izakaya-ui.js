@@ -240,6 +240,8 @@
         checkoutButton.disabled = summary.total <= 0 || alreadyRequested;
         checkoutButton.textContent = alreadyRequested ? t('checkout_requested') : t('checkout_request_action');
       }
+      const staffCallButton = document.querySelector('[data-request-staff]');
+      if (staffCallButton) staffCallButton.disabled = !sessionOpen;
     }
 
     document.addEventListener('click', async (event) => {
@@ -288,6 +290,26 @@
           source: 'customer'
         });
         notify(t('checkout_request_sent'));
+        render();
+      }
+      const requestStaff = event.target.closest('[data-request-staff]');
+      if (requestStaff) {
+        const table = core.loadStore().tables.find((entry) => entry.id === String(tableId));
+        const hasOpenOrders = core.tableOpenSummary(tableId).orders.length > 0;
+        if (table?.status !== 'occupied' && !hasOpenOrders) {
+          notify(t('seat_required'));
+          render();
+          return;
+        }
+        const reason = document.querySelector('[data-staff-call-reason]')?.value || 'other';
+        const noteInput = document.querySelector('[data-staff-call-note]');
+        core.requestStaffCall(tableId, {
+          reason,
+          note: noteInput?.value || '',
+          source: 'customer'
+        });
+        if (noteInput) noteInput.value = '';
+        notify(t('staff_call_sent'));
         render();
       }
       const inc = event.target.closest('[data-inc]');
@@ -930,10 +952,16 @@
           <div>
             <strong>${t(`alert_${alert.type}`)}</strong>
             <div class="muted">${alert.summary}</div>
+            ${alert.type === 'staff_call' && alert.calls ? alert.calls.map((call) => `
+              <div class="muted">${t('table_id')}: ${call.tableId} · ${call.note || t(`staff_call_${call.reason}`)}</div>
+            `).join('') : ''}
           </div>
           <div class="btn-row">
             ${alert.amount ? `<span class="price">${yen(alert.amount)}</span>` : ''}
             ${alert.quantity ? `<span class="status ${alert.severity === 'danger' ? 'new' : alert.severity === 'warning' ? 'preparing' : 'done'}">${alert.quantity}</span>` : ''}
+            ${alert.type === 'staff_call' && alert.calls ? alert.calls.map((call) => `
+              <button class="btn primary" data-resolve-staff-call="${call.id}">${t('staff_call_resolve')}</button>
+            `).join('') : ''}
           </div>
         </div>
       `).join('') : `<div class="empty small">${t('manager_alerts_empty')}</div>`;
@@ -1170,6 +1198,12 @@
       if (toggleTable) {
         core.toggleTableEnabled(toggleTable.dataset.toggleTable);
         notify(t('table_enabled_updated'));
+        render();
+      }
+      const resolveStaffCall = event.target.closest('[data-resolve-staff-call]');
+      if (resolveStaffCall) {
+        core.resolveStaffCall(resolveStaffCall.dataset.resolveStaffCall, { source: 'staff' });
+        notify(t('staff_call_resolved'));
         render();
       }
       const reset = event.target.closest('[data-reset]');

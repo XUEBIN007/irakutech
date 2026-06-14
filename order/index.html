@@ -58,6 +58,20 @@
         <button class="btn primary" data-start-table data-i18n="seat_start_action">注文を開始</button>
       </section>
       <div class="seat-status" data-seat-status hidden></div>
+      <section class="staff-call-panel" data-staff-call-panel>
+        <div>
+          <strong data-i18n="staff_call_title">スタッフ呼出</strong>
+          <span data-i18n="staff_call_desc">お水・取り皿など、スタッフに伝えたいことを送れます。</span>
+        </div>
+        <select data-staff-call-reason aria-label="staff call reason">
+          <option value="water" data-i18n="staff_call_water">お水</option>
+          <option value="plate" data-i18n="staff_call_plate">取り皿</option>
+          <option value="question" data-i18n="staff_call_question">質問</option>
+          <option value="other" data-i18n="staff_call_other">その他</option>
+        </select>
+        <input data-staff-call-note placeholder="例: 子ども用の取り皿をお願いします">
+        <button class="btn ghost" data-request-staff data-i18n="staff_call_action">呼出</button>
+      </section>
       <div class="grid layout-two">
         <section>
           <div class="category-bar" data-categories></div>
