@@ -67,6 +67,7 @@ assert.match(read('order/index.html'), /data-seat-panel/);
 assert.match(read('order/index.html'), /data-start-table/);
 assert.match(read('order/index.html'), /data-request-checkout/);
 assert.match(read('order/index.html'), /data-order-progress/);
+assert.match(read('order/index.html'), /data-checkout-complete/);
 
 const checklist = read('docs/public-launch-checklist.md');
 assert.match(checklist, /公開前チェックリスト/);

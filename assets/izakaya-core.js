@@ -676,6 +676,24 @@
     };
   }
 
+  function tableRecentCheckout(tableId) {
+    const paidOrders = loadStore().orders
+      .filter((order) => order.tableId === String(tableId) && order.paymentStatus === 'paid')
+      .sort((a, b) => String(b.paidAt || '').localeCompare(String(a.paidAt || '')));
+    if (!paidOrders.length) {
+      return { tableId: String(tableId), orders: [], orderCount: 0, total: 0, paidAt: '' };
+    }
+    const latestPaidAt = paidOrders[0].paidAt || '';
+    const orders = paidOrders.filter((order) => order.paidAt === latestPaidAt);
+    return {
+      tableId: String(tableId),
+      orders,
+      orderCount: orders.length,
+      total: orders.reduce((sum, order) => sum + order.total, 0),
+      paidAt: latestPaidAt
+    };
+  }
+
   function kitchenOrderGroups() {
     const groups = { new: [], preparing: [], done: [] };
     loadStore().orders
@@ -1697,6 +1715,7 @@
     cancelOrder,
     tableOpenSummary,
     tableOrderProgress,
+    tableRecentCheckout,
     kitchenOrderGroups,
     kitchenUrgency,
     kitchenQueueItems,

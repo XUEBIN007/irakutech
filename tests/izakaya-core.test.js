@@ -75,6 +75,12 @@ assert.strictEqual(paidTotal, 1360);
 assert.strictEqual(core.loadStore().orders[0].paymentStatus, 'paid');
 assert.strictEqual(core.loadStore().tables.find((table) => table.id === '3').status, 'available');
 assert.strictEqual(core.loadStore().tables.find((table) => table.id === '3').checkoutRequestedAt, '');
+const paidSummary = core.tableRecentCheckout('3');
+assert.strictEqual(paidSummary.tableId, '3');
+assert.strictEqual(paidSummary.total, 1360);
+assert.strictEqual(paidSummary.orderCount, 1);
+assert.ok(paidSummary.paidAt);
+assert.ok(paidSummary.orders.every((entry) => entry.paymentStatus === 'paid'));
 
 core.toggleSoldOut('banshaku-set');
 assert.strictEqual(core.loadStore().menu.find((item) => item.id === 'banshaku-set').soldOut, true);

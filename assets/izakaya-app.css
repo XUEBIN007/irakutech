@@ -822,6 +822,27 @@ button, input, select, textarea {
   margin-top: 12px;
 }
 
+.checkout-complete {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid rgba(22, 101, 52, 0.2);
+  border-radius: 8px;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 13px;
+}
+
+.checkout-complete:empty {
+  display: none;
+}
+
+.checkout-complete span {
+  color: #3f7a54;
+  line-height: 1.5;
+}
+
 .progress-head {
   display: flex;
   align-items: center;
