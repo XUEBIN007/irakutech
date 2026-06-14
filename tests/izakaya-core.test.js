@@ -154,4 +154,25 @@ assert.strictEqual(core.kitchenQueueItems(new Date('2026-06-13T12:05:00.000Z'))[
 assert.strictEqual(core.kitchenQueueItems(new Date('2026-06-13T12:10:00.000Z'))[0].urgency, 'urgent');
 assert.strictEqual(core.kitchenQueueItems(new Date('2026-06-13T12:10:00.000Z'))[0].waitMinutes, 10);
 
+const courseCart = core.saveCart('7', [{ menuItemId: 'tabe-nomi-3500', quantity: 4, note: '' }]);
+const courseOrder = core.createOrder({ tableId: '7', cart: courseCart });
+const courseStore = core.loadStore();
+courseStore.orders = courseStore.orders.map((entry) => (
+  entry.id === courseOrder.id
+    ? { ...entry, createdAt: '2026-06-13T18:00:00.000Z' }
+    : entry
+));
+core.saveStore(courseStore);
+let courseTimer = core.tableCourseTimer('7', new Date('2026-06-13T19:44:00.000Z'));
+assert.strictEqual(courseTimer.active, true);
+assert.strictEqual(courseTimer.status, 'last_order');
+assert.strictEqual(courseTimer.remainingMinutes, 16);
+assert.strictEqual(courseTimer.lastOrderRemainingMinutes, 1);
+assert.strictEqual(courseTimer.guestCount, 4);
+assert.ok(core.managerAlerts(new Date('2026-06-13T19:44:00.000Z')).some((alert) => alert.type === 'course_last_order' && alert.quantity >= 1));
+courseTimer = core.tableCourseTimer('7', new Date('2026-06-13T20:01:00.000Z'));
+assert.strictEqual(courseTimer.status, 'ended');
+assert.strictEqual(courseTimer.remainingMinutes, 0);
+assert.ok(core.managerAlerts(new Date('2026-06-13T20:01:00.000Z')).some((alert) => alert.type === 'course_ended' && alert.quantity >= 1));
+
 console.log('izakaya core tests passed');

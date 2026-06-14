@@ -225,6 +225,19 @@
           <div class="progress-track"><span style="width:${progressPercent}%"></span></div>
         ` : '';
       }
+      const courseTimer = core.tableCourseTimer ? core.tableCourseTimer(tableId) : null;
+      const courseTimerEl = document.querySelector('[data-course-timer]');
+      if (courseTimerEl) {
+        courseTimerEl.innerHTML = courseTimer?.active ? `
+          <div class="progress-head">
+            <strong>${t('course_timer_title')}</strong>
+            <span>${courseTimer.status === 'ended'
+              ? t('course_timer_ended')
+              : t('course_timer_remaining', { remaining: courseTimer.remainingMinutes, last: courseTimer.lastOrderRemainingMinutes })}</span>
+          </div>
+          <div class="course-timer-meta">${t('course_timer_last_order', { last: courseTimer.lastOrderRemainingMinutes })}</div>
+        ` : '';
+      }
       const checkoutComplete = core.tableRecentCheckout ? core.tableRecentCheckout(tableId) : null;
       const checkoutCompleteEl = document.querySelector('[data-checkout-complete]');
       if (checkoutCompleteEl) {
@@ -954,6 +967,9 @@
             <div class="muted">${alert.summary}</div>
             ${alert.type === 'staff_call' && alert.calls ? alert.calls.map((call) => `
               <div class="muted">${t('table_id')}: ${call.tableId} · ${call.note || t(`staff_call_${call.reason}`)}</div>
+            `).join('') : ''}
+            ${alert.timers ? alert.timers.map((timer) => `
+              <div class="muted">${t('table_id')}: ${timer.tableId} · ${t('course_timer_remaining', { remaining: timer.remainingMinutes, last: timer.lastOrderRemainingMinutes })}</div>
             `).join('') : ''}
           </div>
           <div class="btn-row">

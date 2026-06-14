@@ -39,6 +39,9 @@ assert.strictEqual(IzakayaI18n.t('checkout_no_due'), '現在、会計できる�
 assert.strictEqual(IzakayaI18n.t('staff_call_title'), 'スタッフ呼出');
 assert.strictEqual(IzakayaI18n.t('staff_call_sent'), 'スタッフにお知らせしました');
 assert.strictEqual(IzakayaI18n.t('alert_staff_call'), 'スタッフ呼出があります');
+assert.strictEqual(IzakayaI18n.t('course_timer_title'), '食べ飲み放題タイマー');
+assert.strictEqual(IzakayaI18n.t('alert_course_last_order'), '放題ラストオーダー間近');
+assert.strictEqual(IzakayaI18n.t('alert_course_ended'), '放題終了時間です');
 IzakayaI18n.setLang('zh');
 assert.strictEqual(IzakayaI18n.t('nav_order'), '点菜');
 assert.strictEqual(IzakayaI18n.t('takeout_confirm_title'), '订单已提交');
@@ -69,6 +72,9 @@ assert.strictEqual(IzakayaI18n.t('checkout_no_due'), '当前没有可结账的�
 assert.strictEqual(IzakayaI18n.t('staff_call_title'), '呼叫店员');
 assert.strictEqual(IzakayaI18n.t('staff_call_sent'), '已通知店员');
 assert.strictEqual(IzakayaI18n.t('alert_staff_call'), '有顾客呼叫店员');
+assert.strictEqual(IzakayaI18n.t('course_timer_title'), '吃喝放题计时');
+assert.strictEqual(IzakayaI18n.t('alert_course_last_order'), '放题即将最后点单');
+assert.strictEqual(IzakayaI18n.t('alert_course_ended'), '放题时间已结束');
 IzakayaI18n.setLang('en');
 assert.strictEqual(IzakayaI18n.t('nav_order'), 'Order');
 assert.strictEqual(IzakayaI18n.t('takeout_confirm_title'), 'Order received');
@@ -99,5 +105,8 @@ assert.strictEqual(IzakayaI18n.t('checkout_no_due'), 'There is no unpaid order r
 assert.strictEqual(IzakayaI18n.t('staff_call_title'), 'Call Staff');
 assert.strictEqual(IzakayaI18n.t('staff_call_sent'), 'Staff has been notified');
 assert.strictEqual(IzakayaI18n.t('alert_staff_call'), 'Staff call requested');
+assert.strictEqual(IzakayaI18n.t('course_timer_title'), 'All-you-can-eat Timer');
+assert.strictEqual(IzakayaI18n.t('alert_course_last_order'), 'Last order window soon');
+assert.strictEqual(IzakayaI18n.t('alert_course_ended'), 'Course time ended');
 
 console.log('izakaya i18n tests passed');
