@@ -1,5 +1,17 @@
 # Irakutech Project Memo
 
+Read this first for the current development flow:
+
+```text
+docs/development-workflow.md
+```
+
+Read this for local project storage rules:
+
+```text
+docs/codex-project-storage.md
+```
+
 ## GitHub Push
 
 This repository should use SSH, not HTTPS.
@@ -75,7 +87,22 @@ http://127.0.0.1:8765/admin/
 
 ## Tests
 
-Node is bundled with Codex on this Mac:
+Node is bundled with Codex on this Mac. Current working path:
+
+```bash
+/Users/xuebin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node
+```
+
+Run all tests:
+
+```bash
+for test in tests/*.js; do
+  echo "RUN $test"
+  /Users/xuebin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node "$test" || exit 1
+done
+```
+
+Older Codex app path, if needed:
 
 ```bash
 /Applications/Codex.app/Contents/Resources/cua_node/bin/node tests/izakaya-core.test.js
