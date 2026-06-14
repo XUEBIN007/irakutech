@@ -697,6 +697,62 @@
     };
   }
 
+  function courseOrdersForTable(store, tableId) {
+    const courseIds = new Set(store.menu.filter((item) => item.categoryId === 'course').map((item) => item.id));
+    return store.orders
+      .filter((order) => (
+        order.tableId === String(tableId)
+        && order.paymentStatus !== 'paid'
+        && order.paymentStatus !== 'canceled'
+        && order.lines.some((line) => courseIds.has(line.menuItemId))
+      ))
+      .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+  }
+
+  function tableCourseTimer(tableId, now = new Date()) {
+    const store = loadStore();
+    const orders = courseOrdersForTable(store, tableId);
+    if (!orders.length) {
+      return {
+        tableId: String(tableId),
+        active: false,
+        status: 'none',
+        startAt: '',
+        endAt: '',
+        lastOrderAt: '',
+        remainingMinutes: 0,
+        lastOrderRemainingMinutes: 0,
+        guestCount: 0
+      };
+    }
+    const startAt = orders[0].createdAt;
+    const startMs = new Date(startAt).getTime();
+    const currentMs = new Date(now).getTime();
+    const durationMinutes = 120;
+    const lastOrderBeforeEndMinutes = 15;
+    const endMs = startMs + durationMinutes * 60000;
+    const lastOrderMs = endMs - lastOrderBeforeEndMinutes * 60000;
+    const lastOrderWarningMs = lastOrderMs - lastOrderBeforeEndMinutes * 60000;
+    const remainingMinutes = Math.max(0, Math.ceil((endMs - currentMs) / 60000));
+    const lastOrderRemainingMinutes = Math.max(0, Math.ceil((lastOrderMs - currentMs) / 60000));
+    const status = currentMs >= endMs ? 'ended' : currentMs >= lastOrderWarningMs ? 'last_order' : 'active';
+    return {
+      tableId: String(tableId),
+      active: true,
+      status,
+      startAt,
+      endAt: new Date(endMs).toISOString(),
+      lastOrderAt: new Date(lastOrderMs).toISOString(),
+      remainingMinutes,
+      lastOrderRemainingMinutes,
+      guestCount: orders.reduce((sum, order) => (
+        sum + order.lines
+          .filter((line) => store.menu.find((item) => item.id === line.menuItemId)?.categoryId === 'course')
+          .reduce((lineSum, line) => lineSum + Number(line.quantity || 0), 0)
+      ), 0)
+    };
+  }
+
   function kitchenOrderGroups() {
     const groups = { new: [], preparing: [], done: [] };
     loadStore().orders
@@ -1029,6 +1085,27 @@
       summary: staffCalls.map((call) => `Table ${call.tableId}: ${call.note || call.reason}`).join(' / '),
       quantity: staffCalls.length,
       calls: staffCalls
+    });
+    const courseTimers = store.tables
+      .map((table) => tableCourseTimer(table.id, now))
+      .filter((timer) => timer.active);
+    const courseLastOrder = courseTimers.filter((timer) => timer.status === 'last_order');
+    if (courseLastOrder.length > 0) alerts.push({
+      type: 'course_last_order',
+      severity: 'warning',
+      module: 'table',
+      summary: courseLastOrder.map((timer) => `Table ${timer.tableId}: L.O. ${timer.lastOrderRemainingMinutes} min`).join(' / '),
+      quantity: courseLastOrder.length,
+      timers: courseLastOrder
+    });
+    const courseEnded = courseTimers.filter((timer) => timer.status === 'ended');
+    if (courseEnded.length > 0) alerts.push({
+      type: 'course_ended',
+      severity: 'danger',
+      module: 'table',
+      summary: courseEnded.map((timer) => `Table ${timer.tableId}: ended`).join(' / '),
+      quantity: courseEnded.length,
+      timers: courseEnded
     });
     return alerts;
   }
@@ -1778,6 +1855,7 @@
     tableOpenSummary,
     tableOrderProgress,
     tableRecentCheckout,
+    tableCourseTimer,
     kitchenOrderGroups,
     kitchenUrgency,
     kitchenQueueItems,

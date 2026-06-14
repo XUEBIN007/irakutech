@@ -822,6 +822,25 @@ button, input, select, textarea {
   margin-top: 12px;
 }
 
+.course-timer {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid rgba(180, 35, 24, 0.22);
+  border-radius: 8px;
+  background: #fff7ed;
+}
+
+.course-timer:empty {
+  display: none;
+}
+
+.course-timer-meta {
+  margin-top: 6px;
+  color: #9a3412;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .checkout-complete {
   display: grid;
   gap: 4px;
