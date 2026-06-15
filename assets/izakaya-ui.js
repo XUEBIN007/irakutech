@@ -235,7 +235,7 @@
         progressEl.innerHTML = progress.totalQuantity ? `
           <div class="progress-head">
             <strong>${t('order_progress')}</strong>
-            <span>${progress.ready ? t('order_progress_ready') : t('order_progress_done', { done: progress.doneQuantity, total: progress.totalQuantity })}</span>
+            <span>${progress.ready ? t('order_progress_ready') : t('order_progress_status', { fresh: progress.newQuantity, preparing: progress.preparingQuantity, done: progress.doneQuantity })}</span>
           </div>
           <div class="progress-track"><span style="width:${progressPercent}%"></span></div>
         ` : '';

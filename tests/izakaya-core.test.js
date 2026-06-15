@@ -120,6 +120,8 @@ assert.strictEqual(kdsOrder.lines[0].status, 'new');
 assert.ok(kdsOrder.lines[0].id);
 let progress = core.tableOrderProgress('5');
 assert.strictEqual(progress.totalQuantity, 3);
+assert.strictEqual(progress.newQuantity, 3);
+assert.strictEqual(progress.preparingQuantity, 0);
 assert.strictEqual(progress.doneQuantity, 0);
 assert.strictEqual(progress.openQuantity, 3);
 assert.strictEqual(progress.ready, false);
@@ -138,6 +140,8 @@ const doneLine = core.updateOrderLineStatus(kdsOrder.id, kdsOrder.lines[0].id, '
 assert.strictEqual(doneLine.status, 'done');
 progress = core.tableOrderProgress('5');
 assert.strictEqual(progress.totalQuantity, 3);
+assert.strictEqual(progress.newQuantity, 0);
+assert.strictEqual(progress.preparingQuantity, 2);
 assert.strictEqual(progress.doneQuantity, 1);
 assert.strictEqual(progress.openQuantity, 2);
 assert.strictEqual(progress.ready, false);
@@ -153,6 +157,8 @@ assert.strictEqual(kitchenGroups.new.some((item) => item.orderId === kdsOrder.id
 assert.strictEqual(kitchenGroups.preparing.some((item) => item.orderId === kdsOrder.id), false);
 assert.strictEqual(kitchenGroups.done.some((item) => item.orderId === kdsOrder.id), true);
 progress = core.tableOrderProgress('5');
+assert.strictEqual(progress.newQuantity, 0);
+assert.strictEqual(progress.preparingQuantity, 0);
 assert.strictEqual(progress.doneQuantity, 3);
 assert.strictEqual(progress.openQuantity, 0);
 assert.strictEqual(progress.ready, true);
