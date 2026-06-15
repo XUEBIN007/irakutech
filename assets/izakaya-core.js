@@ -671,6 +671,12 @@
     ));
     const lines = orders.flatMap((order) => order.lines);
     const totalQuantity = lines.reduce((sum, line) => sum + Number(line.quantity || 0), 0);
+    const newQuantity = lines
+      .filter((line) => line.status === 'new')
+      .reduce((sum, line) => sum + Number(line.quantity || 0), 0);
+    const preparingQuantity = lines
+      .filter((line) => line.status === 'preparing')
+      .reduce((sum, line) => sum + Number(line.quantity || 0), 0);
     const doneQuantity = lines
       .filter((line) => line.status === 'done')
       .reduce((sum, line) => sum + Number(line.quantity || 0), 0);
@@ -679,6 +685,8 @@
       tableId: String(tableId),
       orderCount: orders.length,
       totalQuantity,
+      newQuantity,
+      preparingQuantity,
       doneQuantity,
       openQuantity,
       ready: totalQuantity > 0 && openQuantity === 0
