@@ -408,8 +408,8 @@
         <div>${orderLinesMarkup(order)}</div>
         <div class="summary"><span>${t('total')}</span><span>${yen(order.total)}</span></div>
         <div class="btn-row">
-          <button class="btn warn" data-status="${order.id}:preparing" ${order.status !== 'new' ? 'disabled' : ''}>${t('action_preparing')}</button>
-          <button class="btn primary" data-status="${order.id}:done" ${order.status === 'paid' ? 'disabled' : ''}>${t('action_done')}</button>
+          <button class="btn warn" data-status="${order.id}:preparing" ${order.status === 'preparing' || order.status === 'done' || order.status === 'paid' ? 'disabled' : ''}>${t('action_preparing')}</button>
+          <button class="btn primary" data-status="${order.id}:done" ${order.status === 'done' || order.status === 'paid' ? 'disabled' : ''}>${t('action_done')}</button>
         </div>
       </article>
     `;
@@ -466,12 +466,7 @@
     function render() {
       i18n?.applyLang(i18n.getLang());
       renderStoreInfo(core.loadStore());
-      const queue = core.kitchenQueueItems();
-      const groups = {
-        new: queue.filter((item) => item.urgency === 'urgent'),
-        preparing: queue.filter((item) => item.urgency === 'warning'),
-        done: queue.filter((item) => item.urgency === 'normal')
-      };
+      const groups = core.kitchenQueueGroups ? core.kitchenQueueGroups() : { new: [], preparing: [], done: [] };
       document.querySelector('[data-orders]').innerHTML = ['new', 'preparing', 'done']
         .map((status) => kitchenColumn(status, groups[status]))
         .join('');
@@ -868,6 +863,23 @@
       if (outsideOrder) {
         selectedOutsideOrderId = outsideOrder.dataset.selectOutsideOrder;
         render();
+      }
+      const action = event.target.closest('[data-status]');
+      if (action) {
+        const [orderId, status] = action.dataset.status.split(':');
+        core.updateOrderStatus(orderId, status);
+        if (cloud?.configured?.()) {
+          try {
+            await cloud.updateOrderStatus(orderId, status);
+            await syncCloud();
+          } catch (error) {
+            console.warn('Cloud status update failed', error);
+            notify('Cloud sync error');
+          }
+        }
+        notify(status === 'done' ? t('set_done') : t('set_preparing'));
+        render();
+        return;
       }
       const pay = event.target.closest('[data-pay]');
       if (pay) {
