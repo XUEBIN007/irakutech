@@ -89,7 +89,20 @@
 
   function mergeCloudOrders(store, cloudOrders) {
     const byId = new Map((store.orders || []).map((order) => [order.id, order]));
-    cloudOrders.forEach((order) => byId.set(order.id, order));
+    cloudOrders.forEach((order) => {
+      const localOrder = byId.get(order.id);
+      if (!localOrder) {
+        byId.set(order.id, order);
+        return;
+      }
+      const localLines = localOrder.lines || [];
+      const lines = (order.lines || []).map((line, index) => {
+        const localLine = localLines.find((entry) => entry.id && entry.id === line.id)
+          || localLines.find((entry, lineIndex) => lineIndex === index && entry.menuItemId === line.menuItemId);
+        return line.status || !localLine?.status ? line : { ...line, status: localLine.status, id: line.id || localLine.id };
+      });
+      byId.set(order.id, { ...localOrder, ...order, lines });
+    });
     const orders = Array.from(byId.values())
       .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
     const openTableIds = new Set(orders

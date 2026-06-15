@@ -482,7 +482,6 @@
         if (cloud?.configured?.()) {
           try {
             await cloud.updateOrderStatus(orderId, orderStatus);
-            await syncCloud();
           } catch (error) {
             console.warn('Cloud status update failed', error);
             notify('Cloud sync error');

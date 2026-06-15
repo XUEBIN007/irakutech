@@ -167,6 +167,18 @@ cloudStyleStore.orders.unshift({
 core.saveStore(cloudStyleStore);
 assert.strictEqual(core.loadStore().orders.find((entry) => entry.id === 'ORD-CLOUD-PREPARING').lines.every((line) => line.status === 'preparing'), true);
 
+const lineOnlyCart = core.saveCart('5-line-only', [
+  { menuItemId: 'mapo-tofu', quantity: 1, note: '' },
+  { menuItemId: 'grilled-gyoza', quantity: 1, note: '' },
+  { menuItemId: 'yu-lin-chi', quantity: 1, note: '' }
+]);
+const lineOnlyOrder = core.createOrder({ tableId: '5', cart: lineOnlyCart });
+core.updateOrderLineStatus(lineOnlyOrder.id, lineOnlyOrder.lines[1].id, 'preparing');
+kitchenGroups = core.kitchenQueueGroups();
+assert.strictEqual(kitchenGroups.preparing.some((item) => item.line.id === lineOnlyOrder.lines[1].id), true);
+assert.strictEqual(kitchenGroups.new.some((item) => item.line.id === lineOnlyOrder.lines[0].id), true);
+assert.strictEqual(kitchenGroups.new.some((item) => item.line.id === lineOnlyOrder.lines[2].id), true);
+
 const agingCart = core.saveCart('6', [{ menuItemId: 'yu-lin-chi', quantity: 1, note: '' }]);
 const agingOrder = core.createOrder({ tableId: '6', cart: agingCart });
 const agingStore = core.loadStore();
