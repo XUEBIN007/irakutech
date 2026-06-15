@@ -419,6 +419,10 @@
     function kitchenItemMarkup(item) {
       const line = item.line;
       const orderTypeClass = item.orderType === 'delivery' ? 'delivery' : item.orderType === 'pickup' ? 'pickup' : 'dine-in';
+      const actions = [
+        item.status === 'new' ? `<button class="btn warn" data-line-status="${item.orderId}:${line.id}:preparing">${t('action_preparing')}</button>` : '',
+        item.status !== 'done' ? `<button class="btn primary" data-line-status="${item.orderId}:${line.id}:done">${t('action_done')}</button>` : ''
+      ].filter(Boolean).join('');
       return `
         <article class="card order-card kitchen-ticket ${orderTypeClass} ${item.urgency}">
           <div class="ticket-head">
@@ -442,9 +446,7 @@
             <span>× ${line.quantity}</span>
           </div>
           ${line.note || item.fulfillment?.note ? `<div class="note-alert"><strong>${t('kitchen_notes')}</strong>${[line.note, item.fulfillment?.note].filter(Boolean).map((note) => `<span>${note}</span>`).join('')}</div>` : ''}
-          <div class="btn-row">
-            <button class="btn primary" data-line-done="${item.orderId}:${line.id}">${t('action_done')}</button>
-          </div>
+          ${actions ? `<div class="btn-row">${actions}</div>` : ''}
         </article>
       `;
     }
@@ -472,11 +474,21 @@
         .join('');
     }
     document.addEventListener('click', async (event) => {
-      const lineAction = event.target.closest('[data-line-done]');
+      const lineAction = event.target.closest('[data-line-status]');
       if (lineAction) {
-        const [orderId, lineId] = lineAction.dataset.lineDone.split(':');
-        core.updateOrderLineStatus(orderId, lineId, 'done');
-        notify(t('set_done'));
+        const [orderId, lineId, status] = lineAction.dataset.lineStatus.split(':');
+        core.updateOrderLineStatus(orderId, lineId, status);
+        const orderStatus = core.loadStore().orders.find((order) => order.id === orderId)?.status || status;
+        if (cloud?.configured?.()) {
+          try {
+            await cloud.updateOrderStatus(orderId, orderStatus);
+            await syncCloud();
+          } catch (error) {
+            console.warn('Cloud status update failed', error);
+            notify('Cloud sync error');
+          }
+        }
+        notify(status === 'done' ? t('set_done') : t('set_preparing'));
         render();
         return;
       }
