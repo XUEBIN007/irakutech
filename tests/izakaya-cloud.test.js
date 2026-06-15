@@ -53,6 +53,26 @@ assert.strictEqual(merged.orders[0].status, 'new');
 assert.strictEqual(merged.tables.find((table) => table.id === '3').status, 'occupied');
 assert.strictEqual(merged.tables.find((table) => table.id === '5').status, 'available');
 
+const localLineStatusStore = {
+  orders: [{
+    ...sampleOrder,
+    status: 'preparing',
+    lines: [
+      { ...sampleOrder.lines[0], id: 'beer-line', status: 'preparing' },
+      { ...sampleOrder.lines[1], id: 'karaage-line', status: 'new' }
+    ]
+  }],
+  tables: [{ id: '3', status: 'occupied', openedAt: '', guestCount: 2 }]
+};
+const cloudStatusOnlyOrder = {
+  ...sampleOrder,
+  status: 'preparing',
+  lines: sampleOrder.lines.map((line) => ({ ...line }))
+};
+const mergedLineStatus = cloud.mergeCloudOrders(localLineStatusStore, [cloudStatusOnlyOrder]);
+assert.strictEqual(mergedLineStatus.orders[0].lines[0].status, 'preparing');
+assert.strictEqual(mergedLineStatus.orders[0].lines[1].status, 'new');
+
 assert.strictEqual(cloud.configured({ supabaseUrl: '', supabaseAnonKey: 'abc' }), false);
 assert.strictEqual(cloud.configured({ supabaseUrl: 'https://example.supabase.co', supabaseAnonKey: '' }), false);
 assert.strictEqual(cloud.configured({ supabaseUrl: 'https://example.supabase.co', supabaseAnonKey: 'abc' }), true);
