@@ -458,7 +458,7 @@
     };
     normalized.lines = (order.lines || []).map((line, index) => ({
       id: line.id || `${line.menuItemId || 'line'}-${order.id || 'order'}-${index}`,
-      status: line.status || (order.status === 'done' ? 'done' : 'new'),
+      status: line.status || (['preparing', 'done'].includes(order.status) ? order.status : 'new'),
       ...line,
       nameEn: line.nameEn || ''
     }));
@@ -831,7 +831,7 @@
     return loadStore().orders
       .filter((order) => order.paymentStatus !== 'paid' && order.paymentStatus !== 'canceled')
       .flatMap((order) => order.lines
-        .filter((line) => line.status !== 'done' && line.status !== 'canceled')
+        .filter((line) => line.status !== 'canceled')
         .map((line) => {
           const minutes = Math.max(0, Math.floor((current - new Date(order.createdAt).getTime()) / 60000));
           return {

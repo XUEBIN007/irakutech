@@ -141,20 +141,31 @@ assert.strictEqual(progress.totalQuantity, 3);
 assert.strictEqual(progress.doneQuantity, 1);
 assert.strictEqual(progress.openQuantity, 2);
 assert.strictEqual(progress.ready, false);
-assert.strictEqual(core.kitchenQueueItems().length, 1);
-assert.strictEqual(core.kitchenQueueItems()[0].nameJa, '焼き餃子（6ヶ）');
+kitchenGroups = core.kitchenQueueGroups();
+assert.strictEqual(kitchenGroups.preparing.some((item) => item.nameJa === '焼き餃子（6ヶ）'), true);
+assert.strictEqual(kitchenGroups.done.some((item) => item.nameJa === 'マーボー豆腐'), true);
 core.updateOrderStatus(kdsOrder.id, 'done');
 assert.strictEqual(core.loadStore().orders.find((entry) => entry.id === kdsOrder.id).status, 'done');
 assert.strictEqual(core.loadStore().orders.find((entry) => entry.id === kdsOrder.id).lines.every((line) => line.status === 'done'), true);
-assert.strictEqual(core.kitchenQueueItems().some((item) => item.orderId === kdsOrder.id), false);
+assert.strictEqual(core.kitchenQueueItems().some((item) => item.orderId === kdsOrder.id && item.status === 'done'), true);
 kitchenGroups = core.kitchenQueueGroups();
 assert.strictEqual(kitchenGroups.new.some((item) => item.orderId === kdsOrder.id), false);
 assert.strictEqual(kitchenGroups.preparing.some((item) => item.orderId === kdsOrder.id), false);
-assert.strictEqual(kitchenGroups.done.some((item) => item.orderId === kdsOrder.id), false);
+assert.strictEqual(kitchenGroups.done.some((item) => item.orderId === kdsOrder.id), true);
 progress = core.tableOrderProgress('5');
 assert.strictEqual(progress.doneQuantity, 3);
 assert.strictEqual(progress.openQuantity, 0);
 assert.strictEqual(progress.ready, true);
+
+const cloudStyleStore = core.loadStore();
+cloudStyleStore.orders.unshift({
+  ...kdsOrder,
+  id: 'ORD-CLOUD-PREPARING',
+  status: 'preparing',
+  lines: kdsOrder.lines.map(({ status, ...line }) => line)
+});
+core.saveStore(cloudStyleStore);
+assert.strictEqual(core.loadStore().orders.find((entry) => entry.id === 'ORD-CLOUD-PREPARING').lines.every((line) => line.status === 'preparing'), true);
 
 const agingCart = core.saveCart('6', [{ menuItemId: 'yu-lin-chi', quantity: 1, note: '' }]);
 const agingOrder = core.createOrder({ tableId: '6', cart: agingCart });
