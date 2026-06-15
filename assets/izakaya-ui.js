@@ -120,6 +120,7 @@
 
   function mountOrder() {
     let selectedCategory = 'all';
+    let courseOnly = false;
     let isSubmitting = false;
     let submitError = '';
     const tableId = getTableId();
@@ -133,10 +134,15 @@
       const summary = core.tableOpenSummary(tableId);
       const table = store.tables.find((entry) => entry.id === String(tableId));
       const sessionOpen = table?.status === 'occupied' || summary.orders.length > 0;
+      const courseMenu = core.tableCourseMenu ? core.tableCourseMenu(tableId) : { active: false, eligibleItems: [], excludedItems: [] };
+      const courseEligibleIds = new Set(courseMenu.eligibleItems.map((item) => item.id));
+      if (!courseMenu.active && courseOnly) courseOnly = false;
       const tableLabel = document.querySelector('[data-table-label]');
       if (tableLabel) tableLabel.textContent = t('order_title', { table: tableId });
       if (!isValidTable) {
         document.querySelector('[data-categories]').innerHTML = '';
+        const courseFilter = document.querySelector('[data-course-filter]');
+        if (courseFilter) courseFilter.hidden = true;
         document.querySelector('[data-menu]').innerHTML = `<div class="empty">${t('invalid_table')}</div>`;
         document.querySelector('[data-cart]').innerHTML = `<div class="empty">${t('invalid_table')}</div>`;
         document.querySelector('[data-total]').textContent = yen(0);
@@ -159,11 +165,20 @@
         `<button class="chip ${category.id === selectedCategory ? 'active' : ''}" data-category="${category.id}">${categoryName(category)}</button>`
       )).join('');
 
-      const menu = selectedCategory === 'all'
+      const courseFilter = document.querySelector('[data-course-filter]');
+      if (courseFilter) {
+        courseFilter.hidden = !courseMenu.active;
+        courseFilter.querySelector('[data-course-only]')?.classList.toggle('active', courseOnly);
+      }
+
+      let menu = selectedCategory === 'all'
         ? store.menu
         : store.menu.filter((item) => item.categoryId === selectedCategory);
+      if (courseMenu.active && courseOnly) {
+        menu = menu.filter((item) => courseEligibleIds.has(item.id));
+      }
       document.querySelector('[data-menu]').innerHTML = menu.map((item) => `
-        <article class="card menu-item ${item.soldOut ? 'soldout' : ''}">
+        <article class="card menu-item ${item.soldOut ? 'soldout' : ''} ${courseMenu.active && !courseEligibleIds.has(item.id) ? 'course-excluded' : ''}">
           <div class="menu-top">
             <div>
               <div class="dish-icon">${item.icon}</div>
@@ -172,7 +187,7 @@
             </div>
             <div class="price">${yen(item.price)}</div>
           </div>
-          <div class="dish-desc">${item.desc}${item.recommended ? ` · ${t('recommended')}` : ''}</div>
+          <div class="dish-desc">${item.desc}${item.recommended ? ` · ${t('recommended')}` : ''}${courseMenu.active && !courseEligibleIds.has(item.id) ? ` · ${t('course_excluded')}` : ''}</div>
           <button class="btn primary" data-add="${item.id}" ${item.soldOut || !sessionOpen ? 'disabled' : ''}>${item.soldOut ? t('soldout') : sessionOpen ? t('add') : t('seat_required')}</button>
         </article>
       `).join('');
@@ -261,6 +276,11 @@
       const category = event.target.closest('[data-category]');
       if (category) {
         selectedCategory = category.dataset.category;
+        render();
+      }
+      const courseFilter = event.target.closest('[data-course-only]');
+      if (courseFilter) {
+        courseOnly = !courseOnly;
         render();
       }
       const add = event.target.closest('[data-add]');

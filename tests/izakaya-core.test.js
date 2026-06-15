@@ -186,4 +186,14 @@ const checkoutTable = dashboard.find((entry) => entry.id === '6');
 assert.strictEqual(checkoutTable.unpaidTotal, 790);
 assert.strictEqual(checkoutTable.openOrderCount, 1);
 
+const courseMenu = core.tableCourseMenu('7', new Date('2026-06-13T19:00:00.000Z'));
+assert.strictEqual(courseMenu.active, true);
+assert.strictEqual(courseMenu.eligibleItems.some((item) => item.id === 'mapo-tofu'), true);
+assert.strictEqual(courseMenu.eligibleItems.some((item) => item.id === 'draft-beer'), true);
+assert.strictEqual(courseMenu.excludedItems.some((item) => item.id === 'tabe-nomi-3500'), true);
+assert.strictEqual(courseMenu.excludedItems.some((item) => item.id === 'banshaku-set'), true);
+assert.strictEqual(courseMenu.excludedItems.some((item) => item.id === 'pork-fried-set'), true);
+assert.strictEqual(core.isCourseEligibleMenuItem(core.loadStore().menu.find((item) => item.id === 'mapo-tofu')), true);
+assert.strictEqual(core.isCourseEligibleMenuItem(core.loadStore().menu.find((item) => item.id === 'banshaku-set')), false);
+
 console.log('izakaya core tests passed');

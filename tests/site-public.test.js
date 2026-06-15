@@ -70,6 +70,7 @@ assert.match(read('order/index.html'), /data-start-table/);
 assert.match(read('order/index.html'), /data-request-checkout/);
 assert.match(read('order/index.html'), /data-order-progress/);
 assert.match(read('order/index.html'), /data-course-timer/);
+assert.match(read('order/index.html'), /data-course-filter/);
 assert.match(read('order/index.html'), /data-checkout-complete/);
 assert.match(read('order/index.html'), /data-staff-call-panel/);
 assert.match(read('order/index.html'), /data-request-staff/);
