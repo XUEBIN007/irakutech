@@ -753,6 +753,37 @@
     };
   }
 
+  function tableDashboard(now = new Date()) {
+    const store = loadStore();
+    const staffCalls = activeStaffCalls();
+    return store.tables.map((table) => {
+      const openOrders = store.orders.filter((order) => (
+        order.tableId === table.id
+        && order.paymentStatus !== 'paid'
+        && order.paymentStatus !== 'canceled'
+      ));
+      const unpaidTotal = openOrders.reduce((sum, order) => sum + order.total, 0);
+      const courseTimer = tableCourseTimer(table.id, now);
+      const calls = staffCalls.filter((call) => call.tableId === table.id);
+      const badges = [];
+      if (!table.enabled) badges.push({ type: 'disabled', severity: 'danger' });
+      if (calls.length) badges.push({ type: 'call', severity: 'warning', quantity: calls.length });
+      if (table.checkoutRequestedAt) badges.push({ type: 'checkout', severity: 'info' });
+      if (courseTimer.status === 'last_order') badges.push({ type: 'course_last_order', severity: 'warning' });
+      if (courseTimer.status === 'ended') badges.push({ type: 'course_ended', severity: 'danger' });
+      return {
+        ...table,
+        label: `${table.area}-${table.id}`,
+        openOrderCount: openOrders.length,
+        unpaidTotal,
+        checkoutRequested: Boolean(table.checkoutRequestedAt),
+        staffCalls: calls,
+        courseTimer,
+        badges
+      };
+    });
+  }
+
   function kitchenOrderGroups() {
     const groups = { new: [], preparing: [], done: [] };
     loadStore().orders
@@ -1856,6 +1887,7 @@
     tableOrderProgress,
     tableRecentCheckout,
     tableCourseTimer,
+    tableDashboard,
     kitchenOrderGroups,
     kitchenUrgency,
     kitchenQueueItems,

@@ -175,4 +175,15 @@ assert.strictEqual(courseTimer.status, 'ended');
 assert.strictEqual(courseTimer.remainingMinutes, 0);
 assert.ok(core.managerAlerts(new Date('2026-06-13T20:01:00.000Z')).some((alert) => alert.type === 'course_ended' && alert.quantity >= 1));
 
+const dashboard = core.tableDashboard(new Date('2026-06-13T19:44:00.000Z'));
+const courseTable = dashboard.find((entry) => entry.id === '7');
+assert.strictEqual(courseTable.status, 'occupied');
+assert.strictEqual(courseTable.unpaidTotal, 14000);
+assert.strictEqual(courseTable.openOrderCount, 1);
+assert.strictEqual(courseTable.courseTimer.status, 'last_order');
+assert.strictEqual(courseTable.badges.some((badge) => badge.type === 'course_last_order'), true);
+const checkoutTable = dashboard.find((entry) => entry.id === '6');
+assert.strictEqual(checkoutTable.unpaidTotal, 790);
+assert.strictEqual(checkoutTable.openOrderCount, 1);
+
 console.log('izakaya core tests passed');
