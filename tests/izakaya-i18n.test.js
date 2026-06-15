@@ -45,6 +45,8 @@ assert.strictEqual(IzakayaI18n.t('alert_course_ended'), '放題終了時間で�
 assert.strictEqual(IzakayaI18n.t('table_due'), '未会計');
 assert.strictEqual(IzakayaI18n.t('table_badge_call'), '呼出');
 assert.strictEqual(IzakayaI18n.t('status_occupied'), '利用中');
+assert.strictEqual(IzakayaI18n.t('course_filter_action'), '放題対象のみ');
+assert.strictEqual(IzakayaI18n.t('course_excluded'), '放題対象外');
 IzakayaI18n.setLang('zh');
 assert.strictEqual(IzakayaI18n.t('nav_order'), '点菜');
 assert.strictEqual(IzakayaI18n.t('takeout_confirm_title'), '订单已提交');
@@ -81,6 +83,8 @@ assert.strictEqual(IzakayaI18n.t('alert_course_ended'), '放题时间已结束')
 assert.strictEqual(IzakayaI18n.t('table_due'), '未结账');
 assert.strictEqual(IzakayaI18n.t('table_badge_call'), '呼叫');
 assert.strictEqual(IzakayaI18n.t('status_occupied'), '用餐中');
+assert.strictEqual(IzakayaI18n.t('course_filter_action'), '只看放题对象');
+assert.strictEqual(IzakayaI18n.t('course_excluded'), '放题对象外');
 IzakayaI18n.setLang('en');
 assert.strictEqual(IzakayaI18n.t('nav_order'), 'Order');
 assert.strictEqual(IzakayaI18n.t('takeout_confirm_title'), 'Order received');
@@ -117,5 +121,7 @@ assert.strictEqual(IzakayaI18n.t('alert_course_ended'), 'Course time ended');
 assert.strictEqual(IzakayaI18n.t('table_due'), 'Due');
 assert.strictEqual(IzakayaI18n.t('table_badge_call'), 'Call');
 assert.strictEqual(IzakayaI18n.t('status_occupied'), 'Occupied');
+assert.strictEqual(IzakayaI18n.t('course_filter_action'), 'Course items only');
+assert.strictEqual(IzakayaI18n.t('course_excluded'), 'Not included');
 
 console.log('izakaya i18n tests passed');

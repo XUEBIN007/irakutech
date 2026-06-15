@@ -753,6 +753,25 @@
     };
   }
 
+  function isCourseEligibleMenuItem(item) {
+    if (!item) return false;
+    return !['course', 'banquet', 'setmeal'].includes(item.categoryId);
+  }
+
+  function tableCourseMenu(tableId, now = new Date()) {
+    const store = loadStore();
+    const courseTimer = tableCourseTimer(tableId, now);
+    const eligibleItems = store.menu.filter(isCourseEligibleMenuItem);
+    const excludedItems = store.menu.filter((item) => !isCourseEligibleMenuItem(item));
+    return {
+      tableId: String(tableId),
+      active: courseTimer.active && courseTimer.status !== 'ended',
+      courseTimer,
+      eligibleItems,
+      excludedItems
+    };
+  }
+
   function tableDashboard(now = new Date()) {
     const store = loadStore();
     const staffCalls = activeStaffCalls();
@@ -1887,6 +1906,8 @@
     tableOrderProgress,
     tableRecentCheckout,
     tableCourseTimer,
+    tableCourseMenu,
+    isCourseEligibleMenuItem,
     tableDashboard,
     kitchenOrderGroups,
     kitchenUrgency,
