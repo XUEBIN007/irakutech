@@ -994,7 +994,31 @@
         </div>
       `).join('');
       document.querySelector('[name="categoryId"]').innerHTML = store.categories.map((category) => `<option value="${category.id}">${categoryName(category)}</option>`).join('');
-      document.querySelector('[data-admin-tables]').innerHTML = store.tables.map((table) => `<div class="table-line"><strong>${table.area}-${table.id}</strong><span>${table.seats}${t('seats')} · ${table.enabled ? table.status : t('disable_table')}</span></div>`).join('');
+      const tableDashboard = core.tableDashboard ? core.tableDashboard() : store.tables.map((table) => ({
+        ...table,
+        label: `${table.area}-${table.id}`,
+        openOrderCount: 0,
+        unpaidTotal: 0,
+        badges: [],
+        courseTimer: { active: false }
+      }));
+      document.querySelector('[data-admin-tables]').innerHTML = tableDashboard.map((table) => `
+        <div class="table-card ${table.unpaidTotal > 0 ? 'active' : ''} ${table.badges.some((badge) => badge.severity === 'danger') ? 'attention-line' : ''}">
+          <div class="table-card-head">
+            <strong>${table.label}</strong>
+            <span class="status ${table.enabled ? table.status : 'canceled'}">${table.enabled ? statusText(table.status) : t('disable_table')}</span>
+          </div>
+          <div class="table-card-meta">
+            <span>${table.seats}${t('seats')}</span>
+            <span>${t('open_order_count', { count: table.openOrderCount })}</span>
+            <span>${t('table_due')}: ${yen(table.unpaidTotal)}</span>
+          </div>
+          ${table.courseTimer?.active ? `<div class="muted">${t('course_timer_remaining', { remaining: table.courseTimer.remainingMinutes, last: table.courseTimer.lastOrderRemainingMinutes })}</div>` : ''}
+          ${table.badges.length ? `<div class="table-badges">${table.badges.map((badge) => `
+            <span class="status ${badge.severity === 'danger' ? 'new' : badge.severity === 'warning' ? 'preparing' : 'done'}">${t(`table_badge_${badge.type}`)}${badge.quantity ? ` ${badge.quantity}` : ''}</span>
+          `).join('')}</div>` : ''}
+        </div>
+      `).join('');
       document.querySelector('[data-low-stock-count]').textContent = `${t('low_stock')} ${inventory.lowStock.length}`;
       document.querySelector('[data-inventory-form] [name="menuItemId"]').innerHTML = store.menu.map((item) => `<option value="${item.id}">${itemName(item)}</option>`).join('');
       document.querySelector('[data-movement-form] [name="menuItemId"]').innerHTML = store.menu.map((item) => `<option value="${item.id}">${itemName(item)}</option>`).join('');
