@@ -604,7 +604,13 @@
   function updateOrderStatus(orderId, status) {
     const store = loadStore();
     const order = store.orders.find((entry) => entry.id === orderId);
-    store.orders = store.orders.map((order) => order.id === orderId ? { ...order, status } : order);
+    store.orders = store.orders.map((order) => {
+      if (order.id !== orderId) return order;
+      const lines = order.lines.map((line) => (
+        line.status === 'canceled' ? line : { ...line, status }
+      ));
+      return { ...order, status, lines };
+    });
     if (order) addAuditEvent(store, {
       module: 'kitchen',
       action: 'update_order_status',
@@ -841,8 +847,17 @@
             ...line,
             line
           };
-        }))
+      }))
       .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+  }
+
+  function kitchenQueueGroups(now = new Date()) {
+    const groups = { new: [], preparing: [], done: [] };
+    kitchenQueueItems(now).forEach((item) => {
+      const status = groups[item.status] ? item.status : 'new';
+      groups[status].push(item);
+    });
+    return groups;
   }
 
   function updateOrderLineStatus(orderId, lineId, status) {
@@ -1912,6 +1927,7 @@
     kitchenOrderGroups,
     kitchenUrgency,
     kitchenQueueItems,
+    kitchenQueueGroups,
     updateOrderLineStatus,
     checkoutTable,
     checkoutOrder,
