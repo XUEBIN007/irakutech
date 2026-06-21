@@ -16,15 +16,16 @@ The authoritative local path on the old MacBook is:
 /Users/xuebin/projects/irakutech
 ```
 
-Current confirmed branch and version on the old MacBook:
+Current confirmed repository state on the old MacBook:
 
 ```text
 branch: main
-latest commit: b446152 Merge branch 'codex/new-macbook-handoff'
 remote: git@github.com:XUEBIN007/irakutech.git
 local main == origin/main
 working tree: clean
 ```
+
+Use GitHub `origin/main` as the source of truth. The exact latest commit can change as handoff notes or later work are merged.
 
 Do not use these old or duplicate-looking paths for new development:
 
@@ -87,20 +88,25 @@ git status --short --branch
 git log --oneline -5
 ```
 
-Expected:
+Expected status:
 
 ```text
 ## main...origin/main
-b446152 Merge branch 'codex/new-macbook-handoff'
 ```
 
-If newer work has been merged after this handoff document, the latest commit may be newer than `b446152`. In that case, the important check is:
+The important version check is:
 
 ```bash
 git rev-parse HEAD origin/main main
 ```
 
 All three hashes should match.
+
+Then check the latest commit:
+
+```bash
+git log --oneline -1
+```
 
 ## Required Tools
 
