@@ -20,7 +20,7 @@ Current confirmed branch and version on the old MacBook:
 
 ```text
 branch: main
-latest commit: 27b67f3 Merge branch 'codex/table-kitchen-progress-summary'
+latest commit: b446152 Merge branch 'codex/new-macbook-handoff'
 remote: git@github.com:XUEBIN007/irakutech.git
 local main == origin/main
 working tree: clean
@@ -91,10 +91,10 @@ Expected:
 
 ```text
 ## main...origin/main
-27b67f3 Merge branch 'codex/table-kitchen-progress-summary'
+b446152 Merge branch 'codex/new-macbook-handoff'
 ```
 
-After this handoff document is committed, the newest commit may be newer than `27b67f3`. In that case, the important check is:
+If newer work has been merged after this handoff document, the latest commit may be newer than `b446152`. In that case, the important check is:
 
 ```bash
 git rev-parse HEAD origin/main main
